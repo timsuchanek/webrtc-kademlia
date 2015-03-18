@@ -1,0 +1,210 @@
+/**
+ * Colors from Kuler
+ * Green: 9,87,30;
+ */
+
+body {
+  font-family: 'Oswald', sans-serif;
+}
+
+h1 {
+  text-align: center;
+  margin: 50px 0;
+}
+
+h1, h2 {
+  color: rgb(27,60,89);
+}
+
+h2 {
+  margin-top: 0;
+}
+
+.header {
+  display: flex;
+  width: 800px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.myid {
+  display: flex;
+  vertical-align: middle;
+  height: 47px;
+  margin: 55px 0 50px 100px;
+}
+
+#myId {
+  font-family: "Courier New", Courier, monospace;
+  line-height: 36px;
+  margin-left: 15px;
+}
+
+.console {
+  font-family: "Courier New", Courier, monospace;
+/*  min-width: 800px;
+  
+  position: relative;
+  margin: 0px auto 50px;*/
+  background: #2d2d2d;
+  color: rgb(248,187,68);
+  padding: 40px;
+}
+
+.console h2 {
+  color: white;
+}
+
+.console .content {
+  max-height: 300px;
+  overflow: auto;
+}
+
+.console .content .row {
+  display: block;
+  margin-top: 10px;
+}
+
+.row.success {
+  color: rgb(26,171,81);
+  font-weight: bold;
+}
+
+.row.error {
+  color: rgb(242,75,75);
+  font-weight: bold;
+}
+
+input[type=text], textarea {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+input[type=submit] {
+  font-size: 14px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  font-family: 'Oswald', sans-serif;
+  background: rgb(96,191,191);
+  color: white;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  border: 1px solid rgb(96,191,191);
+  cursor: pointer;
+  transition: .3s all;
+}
+
+
+input[type=submit]:hover {
+  background: rgb(76,171,171);
+}
+
+input[disabled] {
+  background: #ccc;
+  border: 1px solid #ccc;
+  cursor: not-allowed;
+}
+
+input[disabled]:hover {
+  background: #ccc;
+}
+
+.random-number-inputs {
+  display: flex;
+  width: 100%;
+}
+
+.random-number-inputs input[type=text] {
+  flex-grow: 1;
+}
+
+.random-number-inputs input[disabled] {
+  cursor: text;
+  background: white;
+  color: black;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  margin: 0 auto;
+  padding: 50px;
+}
+
+.left {
+  flex-grow: 0.90;
+  flex-shrink: 0.90;
+}
+
+.right {
+  margin-left: 40px;
+  flex-grow: 0.1;
+  flex-shrink: 0.1;
+  flex-basis: 600px;
+}
+
+.get-inputs {
+  display: flex;
+}
+
+.get-inputs .key {
+  flex-grow: 0.8;
+}
+
+.get-inputs .submit {
+  flex-grow: 0.2;
+  border-left: none;
+}
+
+.store-inputs .key, .store-inputs .value {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+#get-answer {
+  margin-top: 20px;
+  font-family: "Courier New", Courier, monospace;
+}
+
+table {
+  border: none;
+}
+
+table tr td {
+  padding-bottom: 10px;
+}
+
+table tr th {
+  padding-bottom: 15px;
+  text-align: left;
+}
+
+table tr td {
+  font-family: "Courier New", Courier, monospace;
+  vertical-align: top;
+}
+
+table tr td:nth-child(1), table tr th:nth-child(1) {
+  font-weight: bold;
+  padding-left: 0;
+}
+
+table tr td, table tr th {
+  padding-left: 15px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+
+.box {
+  background: rgb(237,229,216);
+  padding: 15px;
+  margin-bottom: 15px;
+}

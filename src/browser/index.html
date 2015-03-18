@@ -1,0 +1,78 @@
+<html>
+  <head>
+    <title>Kademlia WebRTC</title>
+    <link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="header">
+      <h1>Kademlia WebRTC</h1>
+      <div class="myid">
+        <h2>My ID</h2>
+        <div id="myId"></div>
+      </div>
+    </div>
+    <div class="container">
+
+      <div class="left">
+        <div class="get box">
+          <h2>Get</h2>
+          <div class="get-inputs">
+            <input type="text" class="key" placeholder="Key" name="getKey" id="keyGet">
+            <input type="submit" value="Get" name="submitGet" class="submit" id="submitGet" disabled="disabled">
+          </div>
+          <div id="get-answer"></div>
+        </div>
+        <div class="my-storage box">
+          <h2>My Storage</h2>
+          <table class="key-value" id="storageTable">
+            <tr>
+              <th>Key</th>
+              <th>Value</th>
+            </tr>
+
+          </table>
+        </div>
+        <div class="console">
+          <h2>Log</h2>
+          <div class="content">
+            <span class="row">Not joined the network yet.</span>
+          </div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="random-number box">
+          <h2>Generate a random 160 bit Hash</h2>
+          <div class="random-number-inputs">
+            <input type="text" value="" id="randomId">
+            <input type="submit" value="Generate" id="generateButton">
+          </div>
+        </div>
+        <div class="store box">
+          <h2>Store</h2>
+          <div class="store-inputs">
+            <input type="text" class="key" placeholder="Key" name="storeKey" id="storeKey">
+            <textarea name="storeValue" cols="30" rows="10" class="value" placeholder="Value" id="storeValue"></textarea>
+            <input type="submit" value="Store" name="storeSubmit" class="submit" id="submitStore" disabled="disabled">
+            <div id="storeAnswer"></div>
+          </div>
+        </div>
+        <div class="routing-table box">
+          <h2>Routing Table</h2>
+          <table id="routingTable">
+            <tr>
+              <th>Bucket</th>
+              <th>Node ID</th>
+              <th>First 16 Binary Digits</th>
+            </tr>
+
+
+          </table>
+        </div>
+        
+      </div>
+      
+    </div>
+    <script src="build.js"></script>
+  </body>
+</html>

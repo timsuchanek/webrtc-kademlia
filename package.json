@@ -1,0 +1,24 @@
+{
+  "name": "webrtc-kademlia",
+  "version": "0.0.1",
+  "description": "",
+  "main": "./src/browser/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@bitbucket.org:vardump/webrtc-kademlia.git"
+  },
+  "author": {
+    "name": "Tim Suchanek",
+    "email": "tim.suchanek@gmail.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "finalhandler": "^0.3.4",
+    "peerjs": "^0.3.14",
+    "q": "^1.2.0",
+    "serve-static": "^1.9.2"
+  }
+}
