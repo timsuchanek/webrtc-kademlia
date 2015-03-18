@@ -24,5 +24,9 @@ For the peer.js Server you need to use a modified version, that has some DHT spe
 Point 2 Browser Tabs to `http://localhost:8000` and enjoy the demo.
 (We need two, because they need to connect to have a working demo)
 
-### License
+## Development
+If you want to change something in the code, run [webpack](http://webpack.github.io) in the `src/browser` folder to compile it with webpack:
+`webpack main.js build.js --watch -d`
+
+## License
 MIT
