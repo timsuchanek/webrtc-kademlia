@@ -10,7 +10,7 @@ function KBucket(k, prefix, kademlia, routingTable) {
   this.routingTable = routingTable;
 }
 
-KBucket.prototype.update = function(id, online) {
+KBucket.prototype.update = function(id, online, cb) {
   var index = this._list.indexOf(id);
 
   if (online) {
@@ -35,6 +35,10 @@ KBucket.prototype.update = function(id, online) {
           }
         });
       }
+
+      // notify the routing table, that there is a new node
+      // Later this should be done via the event emitter!
+      cb(id);
     }
   } else {
     if (index !== -1) {

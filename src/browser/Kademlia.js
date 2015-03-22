@@ -33,7 +33,9 @@ if (typeof Array.prototype.sortByDistance !== 'function') {
 function Kademlia() {
   this.myRandomId = null;
   this.routingTable = null;
-  this.storage = null;
+
+  this.storage = new Storage();
+
   this.peer = null;
 }
 
@@ -230,7 +232,7 @@ Kademlia.prototype.STORE = function(id, key, value) {
 
     }, constants.STORE_TIMEOUT);
 
-  })
+  });
 
 };
 
@@ -720,14 +722,6 @@ Kademlia.prototype.join = function() {
 
 
         /**
-         * Initialize Storage
-         */
-        
-
-        storage = that.storage = window.storage = new Storage();
-
-
-        /**
          * Perform a node lookup for the node's ID
          */
         that.node_lookup(that.myRandomId)
@@ -843,7 +837,7 @@ function addRPCResponses(connection) {
           var myNodes = [];
 
           if (routingTable && req.hasOwnProperty('node')) {
-            myNodes = routingTable.getKNearest(constants.K, req.node);
+            myNodes = that.routingTable.getKNearest(constants.K, req.node);
           }
 
           var answer = {
@@ -875,9 +869,9 @@ function addRPCResponses(connection) {
           };
 
           if (req.hasOwnProperty('key')) {
-            var value = storage.get(req.key);
+            var value = that.storage.get(req.key);
             if (!value) {
-              res.nodes =  routingTable.getKNearest(constants.K, req.key);
+              res.nodes =  that.routingTable.getKNearest(constants.K, req.key);
             } else {
               res.value = value;
             }
@@ -912,7 +906,7 @@ function addRPCResponses(connection) {
           };
 
           if (req.hasOwnProperty('key') && req.hasOwnProperty('value')) {
-            storage.store(req.key, req.value);
+            that.storage.store(req.key, req.value);
             res.success = true;
           } else {
             res.error = {
@@ -940,7 +934,7 @@ function addRPCResponses(connection) {
         var ids = {};
         ids[req.id] = true;
 
-        routingTable.receivedRPCResponse(ids);
+        that.routingTable.receivedRPCResponse(ids);
 
       }
 

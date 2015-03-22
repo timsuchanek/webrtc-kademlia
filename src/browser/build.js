@@ -385,13 +385,13 @@
   \*********************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var Peer = __webpack_require__(/*! peerjs */ 10);
+	var Peer = __webpack_require__(/*! peerjs */ 11);
 	var RoutingTable = __webpack_require__(/*! ./RoutingTable */ 6);
 	var xor = __webpack_require__(/*! ./xor */ 4);
 	var Storage = __webpack_require__(/*! ./Storage */ 7);
 	var constants = __webpack_require__(/*! ./constants */ 5);
 	var util = __webpack_require__(/*! ./util */ 2);
-	var Q = __webpack_require__(/*! q */ 9);
+	var Q = __webpack_require__(/*! q */ 10);
 	
 	if (typeof Array.prototype.sortByDistance !== 'function') {
 	
@@ -420,7 +420,9 @@
 	function Kademlia() {
 	  this.myRandomId = null;
 	  this.routingTable = null;
-	  this.storage = null;
+	
+	  this.storage = new Storage();
+	
 	  this.peer = null;
 	}
 	
@@ -617,7 +619,7 @@
 	
 	    }, constants.STORE_TIMEOUT);
 	
-	  })
+	  });
 	
 	};
 	
@@ -1107,14 +1109,6 @@
 	
 	
 	        /**
-	         * Initialize Storage
-	         */
-	        
-	
-	        storage = that.storage = window.storage = new Storage();
-	
-	
-	        /**
 	         * Perform a node lookup for the node's ID
 	         */
 	        that.node_lookup(that.myRandomId)
@@ -1230,7 +1224,7 @@
 	          var myNodes = [];
 	
 	          if (routingTable && req.hasOwnProperty('node')) {
-	            myNodes = routingTable.getKNearest(constants.K, req.node);
+	            myNodes = that.routingTable.getKNearest(constants.K, req.node);
 	          }
 	
 	          var answer = {
@@ -1262,9 +1256,9 @@
 	          };
 	
 	          if (req.hasOwnProperty('key')) {
-	            var value = storage.get(req.key);
+	            var value = that.storage.get(req.key);
 	            if (!value) {
-	              res.nodes =  routingTable.getKNearest(constants.K, req.key);
+	              res.nodes =  that.routingTable.getKNearest(constants.K, req.key);
 	            } else {
 	              res.value = value;
 	            }
@@ -1299,7 +1293,7 @@
 	          };
 	
 	          if (req.hasOwnProperty('key') && req.hasOwnProperty('value')) {
-	            storage.store(req.key, req.value);
+	            that.storage.store(req.key, req.value);
 	            res.success = true;
 	          } else {
 	            res.error = {
@@ -1327,7 +1321,7 @@
 	        var ids = {};
 	        ids[req.id] = true;
 	
-	        routingTable.receivedRPCResponse(ids);
+	        that.routingTable.receivedRPCResponse(ids);
 	
 	      }
 	
@@ -1578,10 +1572,10 @@
 
 	module.exports = {
 	  // Network Config
-	  PING_TIMEOUT: 400,
-	  STORE_TIMEOUT: 400,
-	  FIND_NODE_TIMEOUT: 400,
-	  FIND_VALUE_TIMEOUT: 400,
+	  PING_TIMEOUT: 1000,
+	  STORE_TIMEOUT: 1000,
+	  FIND_NODE_TIMEOUT: 1000,
+	  FIND_VALUE_TIMEOUT: 1000,
 	  HOST: 'localhost',
 	  HOST_PORT: 9000,
 	  
@@ -1605,7 +1599,7 @@
   \*************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var KBucket = __webpack_require__(/*! ./KBucket */ 11);
+	var KBucket = __webpack_require__(/*! ./KBucket */ 9);
 	var xor = __webpack_require__(/*! ./xor */ 4);
 	var constants = __webpack_require__(/*! ./constants */ 5);
 	var util = __webpack_require__(/*! ./util */ 2);
@@ -1662,6 +1656,43 @@
 	  }
 	}
 	
+	/**
+	 * No matter, if the new node will be saved or not, we have to tell him what to store, if we're the nearest
+	 * node WE KNOW to a specific key.
+	 *
+	 * STEPS
+	 * 1. check in the kbucket if incoming node is online
+	 * 2. notify the routingtable that there's a new node
+	 * 3. Iterate through all keys that we have in our storage
+	 * 4.  -> For each `key` look, if we're the nearest id
+	 * 5.  -> IF we are the nearest ID (except for the new node's id), send him the STORE command
+	 */
+	
+	function _handleNewNode(node) {
+	  var storage = this.kademlia.storage;
+	
+	  var nodesResponsibility = Object.keys(storage._data).filter(function(key) {
+	
+	    var nodesDistance = xor.distance(node, key);
+	    // look, if there ARENT exactly K better nodes (better means nearer at the key)
+	    var betterNodes = this.getKNearest(constants.K, key).filter(function(id) {
+	      return xor.lowerThan(xor.distance(id, key), nodesDistance);
+	    });
+	
+	    // if there aren't k better nodes, `node` has the responsibility to save the content
+	    if (betterNodes.length < constants.K) {
+	    
+	      this.kademlia.STORE(node, key, storage._data[key])
+	      .then(function success() {
+	        // nice
+	        console.log('jo');
+	      }, function failure() {
+	        console.log('no');
+	      });
+	    }
+	  }, this);
+	}
+	
 	
 	RoutingTable.prototype.insertNode = function(id, online) {
 	  // find the right bucket
@@ -1674,7 +1705,7 @@
 	
 	  if (bucketLength < this.k) {
 	    // thats the easiest case
-	    bucket.update(id, online);
+	    bucket.update(id, online, _handleNewNode.bind(this));
 	    return true;
 	  } else if (bucketLength === this.k) {
 	 
@@ -1733,12 +1764,12 @@
 	        2. Insert our node into the right bucket
 	      **/
 	
-	      bucket.update(id, online);
+	      bucket.update(id, online, _handleNewNode.bind(this));
 	
 	      util.drawRoutingTable(this);
 	    } else {
 	      // try inserting anyways (if a node from the bucket falls out)
-	      bucket.update(id, online);
+	      bucket.update(id, online, _handleNewNode.bind(this));
 	    }
 	  }
 	}
@@ -3833,10 +3864,114 @@
 	
 	});
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 16)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 12)))
 
 /***/ },
 /* 9 */
+/*!********************!*\
+  !*** ./KBucket.js ***!
+  \********************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var xor = __webpack_require__(/*! ./xor */ 4);
+	var util = __webpack_require__(/*! ./util */ 2);
+	
+	
+	function KBucket(k, prefix, kademlia, routingTable) {
+	  this._list = [];
+	  this.k = k;
+	  this.prefix = prefix;
+	  this.kademlia = kademlia;
+	  this.routingTable = routingTable;
+	}
+	
+	KBucket.prototype.update = function(id, online, cb) {
+	  var index = this._list.indexOf(id);
+	
+	  if (online) {
+	    if (index !== -1) {
+	      this._list.moveIndexToTail(index);
+	    } else {
+	      if (this._list.length < this.k) {
+	        this._list.push(id);
+	        util.log('Added Node', id, '(' + xor.b64ToBinary(id).substr(0, 16) + ') to KBucket', this.prefix);
+	        util.drawRoutingTable(this.routingTable);
+	      } else {
+	        // check if the OLDEST id is still online
+	        var that = this;
+	        this.kademlia.PING(this._list[0], function(res) {
+	          if (res && res.error) {
+	            that._list.shift();
+	            that._list.push(id);
+	            util.log('Added Node', id, '(' + xor.b64ToBinary(id).substr(0, 16) + ') to KBucket', this.prefix);
+	            util.drawRoutingTable(that.routingTable);
+	          } else {
+	            // today we don't have a price for you :/
+	          }
+	        });
+	      }
+	
+	      // notify the routing table, that there is a new node
+	      // Later this should be done via the event emitter!
+	      cb(id);
+	    }
+	  } else {
+	    if (index !== -1) {
+	      this._list.splice(index, 1);
+	    }
+	    util.log('Removed Node', id, '(' + xor.b64ToBinary(id).substr(0, 16) + ') from KBucket', this.prefix);
+	    util.drawRoutingTable(this.routingTable);
+	  }
+	
+	}
+	
+	KBucket.prototype.getLength = function() {
+	  return this._list.length;
+	}
+	
+	// return ids sorted by distance to input id
+	KBucket.prototype.getClosest = function(id) {
+	  return xor.sortByDistance(this._list, id);
+	}
+	
+	/**
+	  Choose a random ID and perform a Node Lookup for it
+	**/
+	KBucket.prototype.refresh = function() {
+	  var randomId = _getRandomID.call(this);
+	  this.kademlia.node_lookup(randomId, function(results) {
+	    // gratz
+	  });
+	}
+	
+	KBucket.prototype.getNodes = function() {
+	  return this._list;
+	}
+	
+	KBucket.prototype.getPrefix = function() {
+	  return this.prefix;
+	}
+	
+	
+	if (typeof Array.prototype.moveIndexToTail !== 'function') {
+	  Array.prototype.moveIndexToTail = function(pos) {
+	    var tmp = this[pos];
+	    this.splice(pos, 1);
+	    this.push(tmp);
+	  };
+	}
+	
+	function _getRandomID() {
+	  var len = this._list.length;
+	  var randomIndex = (Math.random() * len) | 0;
+	  return this._list[randomIndex];
+	}
+	
+	
+	module.exports = KBucket;
+
+/***/ },
+/* 10 */
 /*!*******************************************************!*\
   !*** /Users/tim/code/bionet/webrtc-kademlia/~/q/q.js ***!
   \*******************************************************/
@@ -5829,20 +5964,20 @@
 	
 	});
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 16)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 12)))
 
 /***/ },
-/* 10 */
+/* 11 */
 /*!*******************************************************************!*\
   !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/lib/peer.js ***!
   \*******************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(/*! ./util */ 12);
+	var util = __webpack_require__(/*! ./util */ 13);
 	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 18);
-	var Socket = __webpack_require__(/*! ./socket */ 13);
-	var MediaConnection = __webpack_require__(/*! ./mediaconnection */ 14);
-	var DataConnection = __webpack_require__(/*! ./dataconnection */ 15);
+	var Socket = __webpack_require__(/*! ./socket */ 14);
+	var MediaConnection = __webpack_require__(/*! ./mediaconnection */ 15);
+	var DataConnection = __webpack_require__(/*! ./dataconnection */ 16);
 	
 	/**
 	 * A peer who can initiate connections with other peers.
@@ -6338,107 +6473,79 @@
 
 
 /***/ },
-/* 11 */
-/*!********************!*\
-  !*** ./KBucket.js ***!
-  \********************/
+/* 12 */
+/*!**********************************************************!*\
+  !*** (webpack)/~/node-libs-browser/~/process/browser.js ***!
+  \**********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var xor = __webpack_require__(/*! ./xor */ 4);
-	var util = __webpack_require__(/*! ./util */ 2);
+	// shim for using process in browser
 	
+	var process = module.exports = {};
 	
-	function KBucket(k, prefix, kademlia, routingTable) {
-	  this._list = [];
-	  this.k = k;
-	  this.prefix = prefix;
-	  this.kademlia = kademlia;
-	  this.routingTable = routingTable;
-	}
+	process.nextTick = (function () {
+	    var canSetImmediate = typeof window !== 'undefined'
+	    && window.setImmediate;
+	    var canPost = typeof window !== 'undefined'
+	    && window.postMessage && window.addEventListener
+	    ;
 	
-	KBucket.prototype.update = function(id, online) {
-	  var index = this._list.indexOf(id);
-	
-	  if (online) {
-	    if (index !== -1) {
-	      this._list.moveIndexToTail(index);
-	    } else {
-	      if (this._list.length < this.k) {
-	        this._list.push(id);
-	        util.log('Added Node', id, '(' + xor.b64ToBinary(id).substr(0, 16) + ') to KBucket', this.prefix);
-	        util.drawRoutingTable(this.routingTable);
-	      } else {
-	        // check if the OLDEST id is still online
-	        var that = this;
-	        this.kademlia.PING(this._list[0], function(res) {
-	          if (res && res.error) {
-	            that._list.shift();
-	            that._list.push(id);
-	            util.log('Added Node', id, '(' + xor.b64ToBinary(id).substr(0, 16) + ') to KBucket', this.prefix);
-	            util.drawRoutingTable(that.routingTable);
-	          } else {
-	            // today we don't have a price for you :/
-	          }
-	        });
-	      }
+	    if (canSetImmediate) {
+	        return function (f) { return window.setImmediate(f) };
 	    }
-	  } else {
-	    if (index !== -1) {
-	      this._list.splice(index, 1);
+	
+	    if (canPost) {
+	        var queue = [];
+	        window.addEventListener('message', function (ev) {
+	            var source = ev.source;
+	            if ((source === window || source === null) && ev.data === 'process-tick') {
+	                ev.stopPropagation();
+	                if (queue.length > 0) {
+	                    var fn = queue.shift();
+	                    fn();
+	                }
+	            }
+	        }, true);
+	
+	        return function nextTick(fn) {
+	            queue.push(fn);
+	            window.postMessage('process-tick', '*');
+	        };
 	    }
-	    util.log('Removed Node', id, '(' + xor.b64ToBinary(id).substr(0, 16) + ') from KBucket', this.prefix);
-	    util.drawRoutingTable(this.routingTable);
-	  }
 	
+	    return function nextTick(fn) {
+	        setTimeout(fn, 0);
+	    };
+	})();
+	
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	
+	function noop() {}
+	
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+	
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
 	}
 	
-	KBucket.prototype.getLength = function() {
-	  return this._list.length;
-	}
-	
-	// return ids sorted by distance to input id
-	KBucket.prototype.getClosest = function(id) {
-	  return xor.sortByDistance(this._list, id);
-	}
-	
-	/**
-	  Choose a random ID and perform a Node Lookup for it
-	**/
-	KBucket.prototype.refresh = function() {
-	  var randomId = _getRandomID.call(this);
-	  this.kademlia.node_lookup(randomId, function(results) {
-	    // gratz
-	  });
-	}
-	
-	KBucket.prototype.getNodes = function() {
-	  return this._list;
-	}
-	
-	KBucket.prototype.getPrefix = function() {
-	  return this.prefix;
-	}
-	
-	
-	if (typeof Array.prototype.moveIndexToTail !== 'function') {
-	  Array.prototype.moveIndexToTail = function(pos) {
-	    var tmp = this[pos];
-	    this.splice(pos, 1);
-	    this.push(tmp);
-	  };
-	}
-	
-	function _getRandomID() {
-	  var len = this._list.length;
-	  var randomIndex = (Math.random() * len) | 0;
-	  return this._list[randomIndex];
-	}
-	
-	
-	module.exports = KBucket;
+	// TODO(shtylman)
+	process.cwd = function () { return '/' };
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
+
 
 /***/ },
-/* 12 */
+/* 13 */
 /*!*******************************************************************!*\
   !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/lib/util.js ***!
   \*******************************************************************/
@@ -6761,13 +6868,13 @@
 
 
 /***/ },
-/* 13 */
+/* 14 */
 /*!*********************************************************************!*\
   !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/lib/socket.js ***!
   \*********************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(/*! ./util */ 12);
+	var util = __webpack_require__(/*! ./util */ 13);
 	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 18);
 	
 	/**
@@ -6984,13 +7091,13 @@
 
 
 /***/ },
-/* 14 */
+/* 15 */
 /*!******************************************************************************!*\
   !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/lib/mediaconnection.js ***!
   \******************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(/*! ./util */ 12);
+	var util = __webpack_require__(/*! ./util */ 13);
 	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 18);
 	var Negotiator = __webpack_require__(/*! ./negotiator */ 19);
 	
@@ -7088,13 +7195,13 @@
 
 
 /***/ },
-/* 15 */
+/* 16 */
 /*!*****************************************************************************!*\
   !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/lib/dataconnection.js ***!
   \*****************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(/*! ./util */ 12);
+	var util = __webpack_require__(/*! ./util */ 13);
 	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 18);
 	var Negotiator = __webpack_require__(/*! ./negotiator */ 19);
 	var Reliable = __webpack_require__(/*! reliable */ 21);
@@ -7364,78 +7471,6 @@
 
 
 /***/ },
-/* 16 */
-/*!**********************************************************!*\
-  !*** (webpack)/~/node-libs-browser/~/process/browser.js ***!
-  \**********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	// shim for using process in browser
-	
-	var process = module.exports = {};
-	
-	process.nextTick = (function () {
-	    var canSetImmediate = typeof window !== 'undefined'
-	    && window.setImmediate;
-	    var canPost = typeof window !== 'undefined'
-	    && window.postMessage && window.addEventListener
-	    ;
-	
-	    if (canSetImmediate) {
-	        return function (f) { return window.setImmediate(f) };
-	    }
-	
-	    if (canPost) {
-	        var queue = [];
-	        window.addEventListener('message', function (ev) {
-	            var source = ev.source;
-	            if ((source === window || source === null) && ev.data === 'process-tick') {
-	                ev.stopPropagation();
-	                if (queue.length > 0) {
-	                    var fn = queue.shift();
-	                    fn();
-	                }
-	            }
-	        }, true);
-	
-	        return function nextTick(fn) {
-	            queue.push(fn);
-	            window.postMessage('process-tick', '*');
-	        };
-	    }
-	
-	    return function nextTick(fn) {
-	        setTimeout(fn, 0);
-	    };
-	})();
-	
-	process.title = 'browser';
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	
-	function noop() {}
-	
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-	
-	process.binding = function (name) {
-	    throw new Error('process.binding is not supported');
-	}
-	
-	// TODO(shtylman)
-	process.cwd = function () { return '/' };
-	process.chdir = function (dir) {
-	    throw new Error('process.chdir is not supported');
-	};
-
-
-/***/ },
 /* 17 */
 /*!**********************************************************************!*\
   !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/lib/adapter.js ***!
@@ -7695,7 +7730,7 @@
   \*************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(/*! ./util */ 12);
+	var util = __webpack_require__(/*! ./util */ 13);
 	var RTCPeerConnection = __webpack_require__(/*! ./adapter */ 17).RTCPeerConnection;
 	var RTCSessionDescription = __webpack_require__(/*! ./adapter */ 17).RTCSessionDescription;
 	var RTCIceCandidate = __webpack_require__(/*! ./adapter */ 17).RTCIceCandidate;

@@ -55,6 +55,43 @@ function _splitBucket(bucket) {
   }
 }
 
+/**
+ * No matter, if the new node will be saved or not, we have to tell him what to store, if we're the nearest
+ * node WE KNOW to a specific key.
+ *
+ * STEPS
+ * 1. check in the kbucket if incoming node is online
+ * 2. notify the routingtable that there's a new node
+ * 3. Iterate through all keys that we have in our storage
+ * 4.  -> For each `key` look, if we're the nearest id
+ * 5.  -> IF we are the nearest ID (except for the new node's id), send him the STORE command
+ */
+
+function _handleNewNode(node) {
+  var storage = this.kademlia.storage;
+
+  var nodesResponsibility = Object.keys(storage._data).filter(function(key) {
+
+    var nodesDistance = xor.distance(node, key);
+    // look, if there ARENT exactly K better nodes (better means nearer at the key)
+    var betterNodes = this.getKNearest(constants.K, key).filter(function(id) {
+      return xor.lowerThan(xor.distance(id, key), nodesDistance);
+    });
+
+    // if there aren't k better nodes, `node` has the responsibility to save the content
+    if (betterNodes.length < constants.K) {
+    
+      this.kademlia.STORE(node, key, storage._data[key])
+      .then(function success() {
+        // nice
+        console.log('jo');
+      }, function failure() {
+        console.log('no');
+      });
+    }
+  }, this);
+}
+
 
 RoutingTable.prototype.insertNode = function(id, online) {
   // find the right bucket
@@ -67,7 +104,7 @@ RoutingTable.prototype.insertNode = function(id, online) {
 
   if (bucketLength < this.k) {
     // thats the easiest case
-    bucket.update(id, online);
+    bucket.update(id, online, _handleNewNode.bind(this));
     return true;
   } else if (bucketLength === this.k) {
  
@@ -126,12 +163,12 @@ RoutingTable.prototype.insertNode = function(id, online) {
         2. Insert our node into the right bucket
       **/
 
-      bucket.update(id, online);
+      bucket.update(id, online, _handleNewNode.bind(this));
 
       util.drawRoutingTable(this);
     } else {
       // try inserting anyways (if a node from the bucket falls out)
-      bucket.update(id, online);
+      bucket.update(id, online, _handleNewNode.bind(this));
     }
   }
 }
