@@ -98,7 +98,7 @@ DHT.prototype.get = function(key) {
             }, function(er) {
               rejectGet(err);
             });
-            
+
           } else {
             /**
              * In this case we DON'T have a value AND we DON'T have any more nodes to contact.
@@ -110,7 +110,7 @@ DHT.prototype.get = function(key) {
           that.kademlia.storeToStorage(key, value);
           resolveGet(value);
         }
-      });      
+      });
     } else {
       rejectGet(value);
     }

@@ -29,7 +29,7 @@ String.prototype.lowerThan = function(b) {
      return this.charAt(i) === '0' ? true : false;
    }
   }
-  return false; 
+  return false;
 }
 
 String.prototype.commonPrefix = function(b) {
@@ -94,7 +94,7 @@ function b64ToBinary(n) {
       return restZeroes[rest] + digitString;
     }
   }
-  
+
   if (typeof n !== 'string') {
     debugger
     throw new TypeError('the input argument `n` is not a string.');
@@ -125,7 +125,7 @@ module.exports.getRandomBinarySequence = getRandomBinarySequence;
 module.exports.distance = function(a, b) {
   var aBin = b64ToBinary(a)
     , bBin = b64ToBinary(b);
-  
+
   return aBin.xor(bBin);
 }
 

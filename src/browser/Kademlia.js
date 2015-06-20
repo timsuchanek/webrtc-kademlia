@@ -15,7 +15,7 @@ if (typeof Array.prototype.sortByDistance !== 'function') {
 
       idA = a.id ? a.id : a;
       idB = b.id ? b.id : b;
-      
+
       // if descending, swap!
       if (desc) {
         var temp = idA;
@@ -56,7 +56,7 @@ Kademlia.prototype.PING = function(id) {
   var connection = this.peer.connect(id);
   var called = false;
   var that = this;
-  
+
   return new Q.Promise(function(resolve, reject) {
     connection.on('error', function() {
       util.log('sth went wrong while trying to connect to ', id, 'for the FIND_NODE RPC', arguments);
@@ -77,7 +77,7 @@ Kademlia.prototype.PING = function(id) {
        * data: data of the RPC
        * req: If the payload is a request or a response
        */
-      
+
 
       connection.send({
         rpc: 'PING',
@@ -126,7 +126,7 @@ Kademlia.prototype.PING = function(id) {
               }});
             }
           }
-          
+
         }
       });
     });
@@ -166,7 +166,7 @@ Kademlia.prototype.STORE = function(id, key, value) {
   if (constants.LOG_STORE) {
     util.log('Starting STORE', arguments);
   }
-  
+
   return new Q.Promise(function(resolve, reject) {
 
     connection.on('error', function(err) {
@@ -200,7 +200,7 @@ Kademlia.prototype.STORE = function(id, key, value) {
           if (constants.LOG_STORE) {
             util.log('Received successful answer to STORE rpc', res);
           }
-          
+
           if (!called) {
             called = true;
 
@@ -227,7 +227,7 @@ Kademlia.prototype.STORE = function(id, key, value) {
         var ids = {};
         ids[id] = false;
         routingTable.receivedRPCResponse(ids);
-        reject({error: err});      
+        reject({error: err});
       }
 
     }, constants.STORE_TIMEOUT);
@@ -317,7 +317,7 @@ Kademlia.prototype.FIND_NODE = function(id, node) {
         ids[id] = false;
         that.routingTable.receivedRPCResponse(ids);
 
-        reject({error: err});      
+        reject({error: err});
       }
 
     }, constants.FIND_NODE_TIMEOUT);
@@ -405,7 +405,7 @@ Kademlia.prototype.FIND_VALUE = function(id, key) {
         that.routingTable.receivedRPCResponse(ids);
 
         reject({error: err});
-        
+
       }
 
     }, constants.FIND_VALUE_TIMEOUT);
@@ -439,7 +439,7 @@ Kademlia.prototype.node_lookup = function(id, valueLookup, getCall) {
 
   var that = this;
   var called = false;
-  
+
   return new Q.Promise(function(resolve, reject) {
 
     /**
@@ -492,7 +492,7 @@ Kademlia.prototype.node_lookup = function(id, valueLookup, getCall) {
         return true;
 
       } else if (_knownNodes.length === constants.K && insertingNodes.length > 0) {
-        
+
         // Filter, which nodes are new
         var worstDistance = xor.distance(_knownNodes[_knownNodes.length - 1].id, id);
 
@@ -505,7 +505,7 @@ Kademlia.prototype.node_lookup = function(id, valueLookup, getCall) {
         */
 
         var newNodes = insertingNodes.filter(function(insertingNode) {
-          
+
           var isNew = _knownNodes.filter(function(knownNode) {
             return knownNode.id == insertingNode;
           }).length === 0;
@@ -558,10 +558,10 @@ Kademlia.prototype.node_lookup = function(id, valueLookup, getCall) {
         return false;
       } else {
         var toProcessNode = toProcessNodes[0];
-        toProcessNode.status = STATES.CONTACTING;      
+        toProcessNode.status = STATES.CONTACTING;
         return toProcessNode;
       }
-      
+
     }
 
 
@@ -575,11 +575,11 @@ Kademlia.prototype.node_lookup = function(id, valueLookup, getCall) {
       if (nodeToContact) {
 
         currentConnections++;
-        
+
         var method = valueLookup ? 'FIND_VALUE' : 'FIND_NODE';
 
         that[method](nodeToContact.id, id)
-        .then(function success(res) {    
+        .then(function success(res) {
           /**
            * Mark Node as already watched.
            */
@@ -633,7 +633,7 @@ Kademlia.prototype.node_lookup = function(id, valueLookup, getCall) {
 
           currentConnections--;
           nodeToContact.status = STATES.CONTACTED;
-          
+
           var newNodeToContact = getNextNode();
 
           if (newNodeToContact && currentConnections < constants.CONCURRENCY_FACTOR) {
@@ -686,20 +686,20 @@ Kademlia.prototype.join = function() {
     path: '/'
   });
 
-  
+
   return new Q.Promise(function(resolve, reject) {
 
     that.peer.on('error', function(err) {
       // The PeerJS Event System is not working properly. So ignore it.
       // One failed connection doesn't mean, that Kademlia.prototype.join() fails.
-      
+
       if (constants.LOG_PEERJS) {
         util.log('Peer.JS Error', err);
       }
     });
 
     that.peer.on('open', function(id) {
-      
+
       // util.log('Jo, I\'m in. My ID:', id);
 
       // It only makes sense to get the bootstrap peers, if the webrtc signaling worked

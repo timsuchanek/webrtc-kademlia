@@ -7,7 +7,7 @@ function RoutingTable(kademlia, k, myId) {
 
   // Initialize with the first bucket on stage -1
   // this bucket starts to split when it's full
-  
+
   this.k = k;
   this.myId = myId;
   this.kademlia = kademlia;
@@ -19,9 +19,9 @@ function RoutingTable(kademlia, k, myId) {
 }
 
 function _findBucket(id) {
-  
+
   if (this.buckets && this.buckets.hasOwnProperty('-1')) {
-    
+
     // the easiest case
 
     return this.buckets['-1'];
@@ -30,7 +30,7 @@ function _findBucket(id) {
 
     // search for bucket with longest common prefix
     // sort descending and take the first element
-    var bestFittingBucket = 
+    var bestFittingBucket =
       Object.keys(this.buckets).sort(function(a, b) {
         return xor.commonPrefix(id, b) - xor.commonPrefix(id, a);
       })[0];
@@ -48,7 +48,7 @@ function _splitBucket(bucket) {
     delete this.buckets[prefix.length > 0 ? prefix : '-1'];
     this.buckets[prefix + '0'] = new KBucket(this.k, prefix + '0', this.kademlia, this);
     this.buckets[prefix + '1'] = new KBucket(this.k, prefix + '1', this.kademlia, this);
-    this.insertNodes(nodes);    
+    this.insertNodes(nodes);
     return true;
   } else {
     return false;
@@ -80,7 +80,7 @@ function _handleNewNode(node) {
 
     // if there aren't k better nodes, `node` has the responsibility to save the content
     if (betterNodes.length < constants.K) {
-    
+
       this.kademlia.STORE(node, key, storage._data[key])
       .then(function success() {
         // nice
@@ -88,6 +88,7 @@ function _handleNewNode(node) {
       }, function failure() {
         console.log('no');
       });
+
     }
   }, this);
 }
@@ -107,10 +108,10 @@ RoutingTable.prototype.insertNode = function(id, online) {
     bucket.update(id, online, _handleNewNode.bind(this));
     return true;
   } else if (bucketLength === this.k) {
- 
+
 
     var ownBucket = _findBucket.call(this, this.myId);
-    
+
     /**
       if the node itself is in the range of the bucket, that is full,
       it's allowed to do a split
@@ -158,7 +159,7 @@ RoutingTable.prototype.insertNode = function(id, online) {
 
       }
 
-      
+
       /**
         2. Insert our node into the right bucket
       **/
@@ -186,7 +187,7 @@ RoutingTable.prototype.insertNodes = function(ids) {
 
 RoutingTable.prototype.getKNearest = function(k, id) {
 
-  var bestFittingBuckets = 
+  var bestFittingBuckets =
     Object.keys(this.buckets).sort(function(a, b) {
       return xor.commonPrefix(id, b) - xor.commonPrefix(id, a);
     })
@@ -205,9 +206,9 @@ RoutingTable.prototype.getKNearest = function(k, id) {
     var bucketIndex = 1;
 
     while (numNeeded > 0 && bucketIndex < bestFittingBuckets.length) {
-      
+
       var currentBucket = bestFittingBuckets[bucketIndex];
-      
+
       var currentBucketsNodes = currentBucket.getClosest(id);
 
       if (currentBucket.length > numNeeded) {

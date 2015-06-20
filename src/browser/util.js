@@ -39,12 +39,12 @@ function stringify(arg) {
   } else {
     stringified = arg;
   }
- 
+
   stringified = stringified.replace('FIND_NODE', '<strong>FIND_NODE</strong>');
   stringified = stringified.replace('PING', '<strong>PING</strong>');
   stringified = stringified.replace('FIND_VALUE', '<strong>FIND_VALUE</strong>');
   stringified = stringified.replace('STORE', '<strong>STORE</strong>');
- 
+
   return stringified;
 }
 
@@ -140,12 +140,12 @@ function _addStoreAnswer(res) {
 module.exports.addHashFunctionality = function() {
   var $generateButton = document.getElementById('generateButton');
   var $randomId = document.getElementById('randomId');
-  
+
   // Initial random value
   $randomId.value = xor.getRandomID(constants.HASH_SPACE);
 
   $generateButton.addEventListener('click', function() {
-    
+
     $randomId.value = xor.getRandomID(constants.HASH_SPACE);
   });
 }

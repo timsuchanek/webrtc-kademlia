@@ -5,7 +5,7 @@ var dht = new DHT();
 
 dht.init()
 .then(function(dht) {
-  
+
   util.success('Successfully joined the network', dht);
 
   util.addGetFunctionality(dht);
@@ -32,6 +32,6 @@ dht.init()
 });
 
 
-document.addEventListener("DOMContentLoaded", function(event) { 
-  util.addHashFunctionality();  
+document.addEventListener("DOMContentLoaded", function(event) {
+  util.addHashFunctionality();
 });
