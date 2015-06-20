@@ -16,6 +16,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "eventemitter3": "^1.1.1",
     "finalhandler": "^0.3.4",
     "peerjs": "^0.3.14",
     "q": "^1.2.0",
