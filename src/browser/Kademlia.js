@@ -1,4 +1,4 @@
-var Peer = require('peerjs');
+var Transport = require('./Transport');
 var RoutingTable = require('./RoutingTable');
 var xor = require('./xor');
 var Storage = require('./Storage');
@@ -680,11 +680,7 @@ Kademlia.prototype.join = function() {
   this.myRandomId = xor.getRandomID(constants.HASH_SPACE);
   var that = this;
 
-  this.peer = new Peer(this.myRandomId, {
-    host: constants.HOST,
-    port: constants.HOST_PORT,
-    path: '/'
-  });
+  this.transport = new Transport(this.myRandomId);
 
 
   return new Q.Promise(function(resolve, reject) {

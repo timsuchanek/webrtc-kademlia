@@ -54,7 +54,7 @@
 	
 	dht.init()
 	.then(function(dht) {
-	  
+	
 	  util.success('Successfully joined the network', dht);
 	
 	  util.addGetFunctionality(dht);
@@ -81,8 +81,8 @@
 	});
 	
 	
-	document.addEventListener("DOMContentLoaded", function(event) { 
-	  util.addHashFunctionality();  
+	document.addEventListener("DOMContentLoaded", function(event) {
+	  util.addHashFunctionality();
 	});
 
 /***/ },
@@ -192,7 +192,7 @@
 	            }, function(er) {
 	              rejectGet(err);
 	            });
-	            
+	
 	          } else {
 	            /**
 	             * In this case we DON'T have a value AND we DON'T have any more nodes to contact.
@@ -204,7 +204,7 @@
 	          that.kademlia.storeToStorage(key, value);
 	          resolveGet(value);
 	        }
-	      });      
+	      });
 	    } else {
 	      rejectGet(value);
 	    }
@@ -262,12 +262,12 @@
 	  } else {
 	    stringified = arg;
 	  }
-	 
+	
 	  stringified = stringified.replace('FIND_NODE', '<strong>FIND_NODE</strong>');
 	  stringified = stringified.replace('PING', '<strong>PING</strong>');
 	  stringified = stringified.replace('FIND_VALUE', '<strong>FIND_VALUE</strong>');
 	  stringified = stringified.replace('STORE', '<strong>STORE</strong>');
-	 
+	
 	  return stringified;
 	}
 	
@@ -363,12 +363,12 @@
 	module.exports.addHashFunctionality = function() {
 	  var $generateButton = document.getElementById('generateButton');
 	  var $randomId = document.getElementById('randomId');
-	  
+	
 	  // Initial random value
 	  $randomId.value = xor.getRandomID(constants.HASH_SPACE);
 	
 	  $generateButton.addEventListener('click', function() {
-	    
+	
 	    $randomId.value = xor.getRandomID(constants.HASH_SPACE);
 	  });
 	}
@@ -385,7 +385,7 @@
   \*********************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var Peer = __webpack_require__(/*! peerjs */ 11);
+	var Transport = __webpack_require__(/*! ./Transport */ 24);
 	var RoutingTable = __webpack_require__(/*! ./RoutingTable */ 6);
 	var xor = __webpack_require__(/*! ./xor */ 4);
 	var Storage = __webpack_require__(/*! ./Storage */ 7);
@@ -402,7 +402,7 @@
 	
 	      idA = a.id ? a.id : a;
 	      idB = b.id ? b.id : b;
-	      
+	
 	      // if descending, swap!
 	      if (desc) {
 	        var temp = idA;
@@ -443,7 +443,7 @@
 	  var connection = this.peer.connect(id);
 	  var called = false;
 	  var that = this;
-	  
+	
 	  return new Q.Promise(function(resolve, reject) {
 	    connection.on('error', function() {
 	      util.log('sth went wrong while trying to connect to ', id, 'for the FIND_NODE RPC', arguments);
@@ -464,7 +464,7 @@
 	       * data: data of the RPC
 	       * req: If the payload is a request or a response
 	       */
-	      
+	
 	
 	      connection.send({
 	        rpc: 'PING',
@@ -513,7 +513,7 @@
 	              }});
 	            }
 	          }
-	          
+	
 	        }
 	      });
 	    });
@@ -553,7 +553,7 @@
 	  if (constants.LOG_STORE) {
 	    util.log('Starting STORE', arguments);
 	  }
-	  
+	
 	  return new Q.Promise(function(resolve, reject) {
 	
 	    connection.on('error', function(err) {
@@ -587,7 +587,7 @@
 	          if (constants.LOG_STORE) {
 	            util.log('Received successful answer to STORE rpc', res);
 	          }
-	          
+	
 	          if (!called) {
 	            called = true;
 	
@@ -614,7 +614,7 @@
 	        var ids = {};
 	        ids[id] = false;
 	        routingTable.receivedRPCResponse(ids);
-	        reject({error: err});      
+	        reject({error: err});
 	      }
 	
 	    }, constants.STORE_TIMEOUT);
@@ -704,7 +704,7 @@
 	        ids[id] = false;
 	        that.routingTable.receivedRPCResponse(ids);
 	
-	        reject({error: err});      
+	        reject({error: err});
 	      }
 	
 	    }, constants.FIND_NODE_TIMEOUT);
@@ -792,7 +792,7 @@
 	        that.routingTable.receivedRPCResponse(ids);
 	
 	        reject({error: err});
-	        
+	
 	      }
 	
 	    }, constants.FIND_VALUE_TIMEOUT);
@@ -826,7 +826,7 @@
 	
 	  var that = this;
 	  var called = false;
-	  
+	
 	  return new Q.Promise(function(resolve, reject) {
 	
 	    /**
@@ -879,7 +879,7 @@
 	        return true;
 	
 	      } else if (_knownNodes.length === constants.K && insertingNodes.length > 0) {
-	        
+	
 	        // Filter, which nodes are new
 	        var worstDistance = xor.distance(_knownNodes[_knownNodes.length - 1].id, id);
 	
@@ -892,7 +892,7 @@
 	        */
 	
 	        var newNodes = insertingNodes.filter(function(insertingNode) {
-	          
+	
 	          var isNew = _knownNodes.filter(function(knownNode) {
 	            return knownNode.id == insertingNode;
 	          }).length === 0;
@@ -945,10 +945,10 @@
 	        return false;
 	      } else {
 	        var toProcessNode = toProcessNodes[0];
-	        toProcessNode.status = STATES.CONTACTING;      
+	        toProcessNode.status = STATES.CONTACTING;
 	        return toProcessNode;
 	      }
-	      
+	
 	    }
 	
 	
@@ -962,11 +962,11 @@
 	      if (nodeToContact) {
 	
 	        currentConnections++;
-	        
+	
 	        var method = valueLookup ? 'FIND_VALUE' : 'FIND_NODE';
 	
 	        that[method](nodeToContact.id, id)
-	        .then(function success(res) {    
+	        .then(function success(res) {
 	          /**
 	           * Mark Node as already watched.
 	           */
@@ -1020,7 +1020,7 @@
 	
 	          currentConnections--;
 	          nodeToContact.status = STATES.CONTACTED;
-	          
+	
 	          var newNodeToContact = getNextNode();
 	
 	          if (newNodeToContact && currentConnections < constants.CONCURRENCY_FACTOR) {
@@ -1067,26 +1067,22 @@
 	  this.myRandomId = xor.getRandomID(constants.HASH_SPACE);
 	  var that = this;
 	
-	  this.peer = new Peer(this.myRandomId, {
-	    host: constants.HOST,
-	    port: constants.HOST_PORT,
-	    path: '/'
-	  });
+	  this.transport = new Transport(this.myRandomId);
 	
-	  
+	
 	  return new Q.Promise(function(resolve, reject) {
 	
 	    that.peer.on('error', function(err) {
 	      // The PeerJS Event System is not working properly. So ignore it.
 	      // One failed connection doesn't mean, that Kademlia.prototype.join() fails.
-	      
+	
 	      if (constants.LOG_PEERJS) {
 	        util.log('Peer.JS Error', err);
 	      }
 	    });
 	
 	    that.peer.on('open', function(id) {
-	      
+	
 	      // util.log('Jo, I\'m in. My ID:', id);
 	
 	      // It only makes sense to get the bootstrap peers, if the webrtc signaling worked
@@ -1387,7 +1383,7 @@
 	     return this.charAt(i) === '0' ? true : false;
 	   }
 	  }
-	  return false; 
+	  return false;
 	}
 	
 	String.prototype.commonPrefix = function(b) {
@@ -1452,7 +1448,7 @@
 	      return restZeroes[rest] + digitString;
 	    }
 	  }
-	  
+	
 	  if (typeof n !== 'string') {
 	    debugger
 	    throw new TypeError('the input argument `n` is not a string.');
@@ -1483,7 +1479,7 @@
 	module.exports.distance = function(a, b) {
 	  var aBin = b64ToBinary(a)
 	    , bBin = b64ToBinary(b);
-	  
+	
 	  return aBin.xor(bBin);
 	}
 	
@@ -1578,7 +1574,7 @@
 	  FIND_VALUE_TIMEOUT: 1000,
 	  HOST: 'localhost',
 	  HOST_PORT: 9000,
-	  
+	
 	  // Kademlia Config
 	  HASH_SPACE: 160,
 	  K: 8,
@@ -1608,7 +1604,7 @@
 	
 	  // Initialize with the first bucket on stage -1
 	  // this bucket starts to split when it's full
-	  
+	
 	  this.k = k;
 	  this.myId = myId;
 	  this.kademlia = kademlia;
@@ -1620,9 +1616,9 @@
 	}
 	
 	function _findBucket(id) {
-	  
+	
 	  if (this.buckets && this.buckets.hasOwnProperty('-1')) {
-	    
+	
 	    // the easiest case
 	
 	    return this.buckets['-1'];
@@ -1631,7 +1627,7 @@
 	
 	    // search for bucket with longest common prefix
 	    // sort descending and take the first element
-	    var bestFittingBucket = 
+	    var bestFittingBucket =
 	      Object.keys(this.buckets).sort(function(a, b) {
 	        return xor.commonPrefix(id, b) - xor.commonPrefix(id, a);
 	      })[0];
@@ -1649,7 +1645,7 @@
 	    delete this.buckets[prefix.length > 0 ? prefix : '-1'];
 	    this.buckets[prefix + '0'] = new KBucket(this.k, prefix + '0', this.kademlia, this);
 	    this.buckets[prefix + '1'] = new KBucket(this.k, prefix + '1', this.kademlia, this);
-	    this.insertNodes(nodes);    
+	    this.insertNodes(nodes);
 	    return true;
 	  } else {
 	    return false;
@@ -1681,7 +1677,7 @@
 	
 	    // if there aren't k better nodes, `node` has the responsibility to save the content
 	    if (betterNodes.length < constants.K) {
-	    
+	
 	      this.kademlia.STORE(node, key, storage._data[key])
 	      .then(function success() {
 	        // nice
@@ -1689,14 +1685,23 @@
 	      }, function failure() {
 	        console.log('no');
 	      });
+	
 	    }
 	  }, this);
 	}
 	
 	
 	RoutingTable.prototype.insertNode = function(id, online) {
-	  // find the right bucket
 	
+	  // is the ID our own ID?
+	
+	  if (id === this.myId) {
+	    console.log('SAW OWN ID');
+	    return;
+	  }
+	
+	
+	  // find the right bucket
 	  var bucket = _findBucket.call(this, id);
 	
 	
@@ -1708,10 +1713,10 @@
 	    bucket.update(id, online, _handleNewNode.bind(this));
 	    return true;
 	  } else if (bucketLength === this.k) {
-	 
+	
 	
 	    var ownBucket = _findBucket.call(this, this.myId);
-	    
+	
 	    /**
 	      if the node itself is in the range of the bucket, that is full,
 	      it's allowed to do a split
@@ -1759,7 +1764,7 @@
 	
 	      }
 	
-	      
+	
 	      /**
 	        2. Insert our node into the right bucket
 	      **/
@@ -1787,7 +1792,7 @@
 	
 	RoutingTable.prototype.getKNearest = function(k, id) {
 	
-	  var bestFittingBuckets = 
+	  var bestFittingBuckets =
 	    Object.keys(this.buckets).sort(function(a, b) {
 	      return xor.commonPrefix(id, b) - xor.commonPrefix(id, a);
 	    })
@@ -1806,9 +1811,9 @@
 	    var bucketIndex = 1;
 	
 	    while (numNeeded > 0 && bucketIndex < bestFittingBuckets.length) {
-	      
+	
 	      var currentBucket = bestFittingBuckets[bucketIndex];
-	      
+	
 	      var currentBucketsNodes = currentBucket.getClosest(id);
 	
 	      if (currentBucket.length > numNeeded) {
@@ -1872,9 +1877,9 @@
 
 /***/ },
 /* 8 */
-/*!*******************************************************!*\
-  !*** /Users/tim/code/bionet/webrtc-kademlia/~/Q/q.js ***!
-  \*******************************************************/
+/*!************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/Q/q.js ***!
+  \************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {// vim:ts=4:sts=4:sw=4:
@@ -1934,8 +1939,22 @@
 	        }
 	
 	    // <script>
-	    } else if (typeof self !== "undefined") {
-	        self.Q = definition();
+	    } else if (typeof window !== "undefined" || typeof self !== "undefined") {
+	        // Prefer window over self for add-on scripts. Use self for
+	        // non-windowed contexts.
+	        var global = typeof window !== "undefined" ? window : self;
+	
+	        // Get the `window` object, save the previous Q global
+	        // and initialize Q as a global.
+	        var previousQ = global.Q;
+	        global.Q = definition();
+	
+	        // Add a noConflict function so Q can be removed from the
+	        // global namespace.
+	        global.Q.noConflict = function () {
+	            global.Q = previousQ;
+	            return this;
+	        };
 	
 	    } else {
 	        throw new Error("This environment was not anticipated by Q. Please file a bug.");
@@ -1970,57 +1989,67 @@
 	    var flushing = false;
 	    var requestTick = void 0;
 	    var isNodeJS = false;
+	    // queue for late tasks, used by unhandled rejection tracking
+	    var laterQueue = [];
 	
 	    function flush() {
 	        /* jshint loopfunc: true */
+	        var task, domain;
 	
 	        while (head.next) {
 	            head = head.next;
-	            var task = head.task;
+	            task = head.task;
 	            head.task = void 0;
-	            var domain = head.domain;
+	            domain = head.domain;
 	
 	            if (domain) {
 	                head.domain = void 0;
 	                domain.enter();
 	            }
+	            runSingle(task, domain);
 	
-	            try {
-	                task();
+	        }
+	        while (laterQueue.length) {
+	            task = laterQueue.pop();
+	            runSingle(task);
+	        }
+	        flushing = false;
+	    }
+	    // runs a single function in the async queue
+	    function runSingle(task, domain) {
+	        try {
+	            task();
 	
-	            } catch (e) {
-	                if (isNodeJS) {
-	                    // In node, uncaught exceptions are considered fatal errors.
-	                    // Re-throw them synchronously to interrupt flushing!
+	        } catch (e) {
+	            if (isNodeJS) {
+	                // In node, uncaught exceptions are considered fatal errors.
+	                // Re-throw them synchronously to interrupt flushing!
 	
-	                    // Ensure continuation if the uncaught exception is suppressed
-	                    // listening "uncaughtException" events (as domains does).
-	                    // Continue in next event to avoid tick recursion.
-	                    if (domain) {
-	                        domain.exit();
-	                    }
-	                    setTimeout(flush, 0);
-	                    if (domain) {
-	                        domain.enter();
-	                    }
-	
-	                    throw e;
-	
-	                } else {
-	                    // In browsers, uncaught exceptions are not fatal.
-	                    // Re-throw them asynchronously to avoid slow-downs.
-	                    setTimeout(function() {
-	                       throw e;
-	                    }, 0);
+	                // Ensure continuation if the uncaught exception is suppressed
+	                // listening "uncaughtException" events (as domains does).
+	                // Continue in next event to avoid tick recursion.
+	                if (domain) {
+	                    domain.exit();
 	                }
-	            }
+	                setTimeout(flush, 0);
+	                if (domain) {
+	                    domain.enter();
+	                }
 	
-	            if (domain) {
-	                domain.exit();
+	                throw e;
+	
+	            } else {
+	                // In browsers, uncaught exceptions are not fatal.
+	                // Re-throw them asynchronously to avoid slow-downs.
+	                setTimeout(function () {
+	                    throw e;
+	                }, 0);
 	            }
 	        }
 	
-	        flushing = false;
+	        if (domain) {
+	            domain.exit();
+	        }
 	    }
 	
 	    nextTick = function (task) {
@@ -2036,9 +2065,16 @@
 	        }
 	    };
 	
-	    if (typeof process !== "undefined" && process.nextTick) {
-	        // Node.js before 0.9. Note that some fake-Node environments, like the
-	        // Mocha test runner, introduce a `process` global without a `nextTick`.
+	    if (typeof process === "object" &&
+	        process.toString() === "[object process]" && process.nextTick) {
+	        // Ensure Q is in a real Node environment, with a `process.nextTick`.
+	        // To see through fake Node environments:
+	        // * Mocha test runner - exposes a `process` global without a `nextTick`
+	        // * Browserify - exposes a `process.nexTick` function that uses
+	        //   `setTimeout`. In this case `setImmediate` is preferred because
+	        //    it is faster. Browserify's `process.toString()` yields
+	        //   "[object Object]", while in a real Node environment
+	        //   `process.nextTick()` yields "[object process]".
 	        isNodeJS = true;
 	
 	        requestTick = function () {
@@ -2082,7 +2118,16 @@
 	            setTimeout(flush, 0);
 	        };
 	    }
-	
+	    // runs a task after all other tasks have been run
+	    // this is useful for unhandled rejection tracking that needs to happen
+	    // after all `then`d tasks have been run.
+	    nextTick.runAfter = function (task) {
+	        laterQueue.push(task);
+	        if (!flushing) {
+	            flushing = true;
+	            requestTick();
+	        }
+	    };
 	    return nextTick;
 	})();
 	
@@ -2576,9 +2621,9 @@
 	 */
 	Q.race = race;
 	function race(answerPs) {
-	    return promise(function(resolve, reject) {
+	    return promise(function (resolve, reject) {
 	        // Switch to this once we can assume at least ES5
-	        // answerPs.forEach(function(answerP) {
+	        // answerPs.forEach(function (answerP) {
 	        //     Q(answerP).then(resolve, reject);
 	        // });
 	        // Use this in the meantime
@@ -2876,6 +2921,7 @@
 	// shimmed environments, this would naturally be a `Set`.
 	var unhandledReasons = [];
 	var unhandledRejections = [];
+	var reportedUnhandledRejections = [];
 	var trackUnhandledRejections = true;
 	
 	function resetUnhandledRejections() {
@@ -2890,6 +2936,14 @@
 	function trackRejection(promise, reason) {
 	    if (!trackUnhandledRejections) {
 	        return;
+	    }
+	    if (typeof process === "object" && typeof process.emit === "function") {
+	        Q.nextTick.runAfter(function () {
+	            if (array_indexOf(unhandledRejections, promise) !== -1) {
+	                process.emit("unhandledRejection", reason, promise);
+	                reportedUnhandledRejections.push(promise);
+	            }
+	        });
 	    }
 	
 	    unhandledRejections.push(promise);
@@ -2907,6 +2961,15 @@
 	
 	    var at = array_indexOf(unhandledRejections, promise);
 	    if (at !== -1) {
+	        if (typeof process === "object" && typeof process.emit === "function") {
+	            Q.nextTick.runAfter(function () {
+	                var atReport = array_indexOf(reportedUnhandledRejections, promise);
+	                if (atReport !== -1) {
+	                    process.emit("rejectionHandled", unhandledReasons[at], promise);
+	                    reportedUnhandledRejections.splice(atReport, 1);
+	                }
+	            });
+	        }
 	        unhandledRejections.splice(at, 1);
 	        unhandledReasons.splice(at, 1);
 	    }
@@ -3434,7 +3497,7 @@
 	
 	    var deferred = Q.defer();
 	    var pendingCount = 0;
-	    array_reduce(promises, function(prev, current, index) {
+	    array_reduce(promises, function (prev, current, index) {
 	        var promise = promises[index];
 	
 	        pendingCount++;
@@ -3463,7 +3526,7 @@
 	    return deferred.promise;
 	}
 	
-	Promise.prototype.any = function() {
+	Promise.prototype.any = function () {
 	    return any(this);
 	};
 	
@@ -3857,6 +3920,10 @@
 	    }
 	};
 	
+	Q.noConflict = function() {
+	    throw new Error("Q.noConflict only works when Q is used as a global");
+	};
+	
 	// All code before this point will be filtered from stack traces.
 	var qEndingLine = captureLine();
 	
@@ -3864,7 +3931,7 @@
 	
 	});
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 12)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 16)))
 
 /***/ },
 /* 9 */
@@ -3972,9 +4039,9 @@
 
 /***/ },
 /* 10 */
-/*!*******************************************************!*\
-  !*** /Users/tim/code/bionet/webrtc-kademlia/~/q/q.js ***!
-  \*******************************************************/
+/*!************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/q/q.js ***!
+  \************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {// vim:ts=4:sts=4:sw=4:
@@ -4034,8 +4101,22 @@
 	        }
 	
 	    // <script>
-	    } else if (typeof self !== "undefined") {
-	        self.Q = definition();
+	    } else if (typeof window !== "undefined" || typeof self !== "undefined") {
+	        // Prefer window over self for add-on scripts. Use self for
+	        // non-windowed contexts.
+	        var global = typeof window !== "undefined" ? window : self;
+	
+	        // Get the `window` object, save the previous Q global
+	        // and initialize Q as a global.
+	        var previousQ = global.Q;
+	        global.Q = definition();
+	
+	        // Add a noConflict function so Q can be removed from the
+	        // global namespace.
+	        global.Q.noConflict = function () {
+	            global.Q = previousQ;
+	            return this;
+	        };
 	
 	    } else {
 	        throw new Error("This environment was not anticipated by Q. Please file a bug.");
@@ -4070,57 +4151,67 @@
 	    var flushing = false;
 	    var requestTick = void 0;
 	    var isNodeJS = false;
+	    // queue for late tasks, used by unhandled rejection tracking
+	    var laterQueue = [];
 	
 	    function flush() {
 	        /* jshint loopfunc: true */
+	        var task, domain;
 	
 	        while (head.next) {
 	            head = head.next;
-	            var task = head.task;
+	            task = head.task;
 	            head.task = void 0;
-	            var domain = head.domain;
+	            domain = head.domain;
 	
 	            if (domain) {
 	                head.domain = void 0;
 	                domain.enter();
 	            }
+	            runSingle(task, domain);
 	
-	            try {
-	                task();
+	        }
+	        while (laterQueue.length) {
+	            task = laterQueue.pop();
+	            runSingle(task);
+	        }
+	        flushing = false;
+	    }
+	    // runs a single function in the async queue
+	    function runSingle(task, domain) {
+	        try {
+	            task();
 	
-	            } catch (e) {
-	                if (isNodeJS) {
-	                    // In node, uncaught exceptions are considered fatal errors.
-	                    // Re-throw them synchronously to interrupt flushing!
+	        } catch (e) {
+	            if (isNodeJS) {
+	                // In node, uncaught exceptions are considered fatal errors.
+	                // Re-throw them synchronously to interrupt flushing!
 	
-	                    // Ensure continuation if the uncaught exception is suppressed
-	                    // listening "uncaughtException" events (as domains does).
-	                    // Continue in next event to avoid tick recursion.
-	                    if (domain) {
-	                        domain.exit();
-	                    }
-	                    setTimeout(flush, 0);
-	                    if (domain) {
-	                        domain.enter();
-	                    }
-	
-	                    throw e;
-	
-	                } else {
-	                    // In browsers, uncaught exceptions are not fatal.
-	                    // Re-throw them asynchronously to avoid slow-downs.
-	                    setTimeout(function() {
-	                       throw e;
-	                    }, 0);
+	                // Ensure continuation if the uncaught exception is suppressed
+	                // listening "uncaughtException" events (as domains does).
+	                // Continue in next event to avoid tick recursion.
+	                if (domain) {
+	                    domain.exit();
 	                }
-	            }
+	                setTimeout(flush, 0);
+	                if (domain) {
+	                    domain.enter();
+	                }
 	
-	            if (domain) {
-	                domain.exit();
+	                throw e;
+	
+	            } else {
+	                // In browsers, uncaught exceptions are not fatal.
+	                // Re-throw them asynchronously to avoid slow-downs.
+	                setTimeout(function () {
+	                    throw e;
+	                }, 0);
 	            }
 	        }
 	
-	        flushing = false;
+	        if (domain) {
+	            domain.exit();
+	        }
 	    }
 	
 	    nextTick = function (task) {
@@ -4136,9 +4227,16 @@
 	        }
 	    };
 	
-	    if (typeof process !== "undefined" && process.nextTick) {
-	        // Node.js before 0.9. Note that some fake-Node environments, like the
-	        // Mocha test runner, introduce a `process` global without a `nextTick`.
+	    if (typeof process === "object" &&
+	        process.toString() === "[object process]" && process.nextTick) {
+	        // Ensure Q is in a real Node environment, with a `process.nextTick`.
+	        // To see through fake Node environments:
+	        // * Mocha test runner - exposes a `process` global without a `nextTick`
+	        // * Browserify - exposes a `process.nexTick` function that uses
+	        //   `setTimeout`. In this case `setImmediate` is preferred because
+	        //    it is faster. Browserify's `process.toString()` yields
+	        //   "[object Object]", while in a real Node environment
+	        //   `process.nextTick()` yields "[object process]".
 	        isNodeJS = true;
 	
 	        requestTick = function () {
@@ -4182,7 +4280,16 @@
 	            setTimeout(flush, 0);
 	        };
 	    }
-	
+	    // runs a task after all other tasks have been run
+	    // this is useful for unhandled rejection tracking that needs to happen
+	    // after all `then`d tasks have been run.
+	    nextTick.runAfter = function (task) {
+	        laterQueue.push(task);
+	        if (!flushing) {
+	            flushing = true;
+	            requestTick();
+	        }
+	    };
 	    return nextTick;
 	})();
 	
@@ -4676,9 +4783,9 @@
 	 */
 	Q.race = race;
 	function race(answerPs) {
-	    return promise(function(resolve, reject) {
+	    return promise(function (resolve, reject) {
 	        // Switch to this once we can assume at least ES5
-	        // answerPs.forEach(function(answerP) {
+	        // answerPs.forEach(function (answerP) {
 	        //     Q(answerP).then(resolve, reject);
 	        // });
 	        // Use this in the meantime
@@ -4976,6 +5083,7 @@
 	// shimmed environments, this would naturally be a `Set`.
 	var unhandledReasons = [];
 	var unhandledRejections = [];
+	var reportedUnhandledRejections = [];
 	var trackUnhandledRejections = true;
 	
 	function resetUnhandledRejections() {
@@ -4990,6 +5098,14 @@
 	function trackRejection(promise, reason) {
 	    if (!trackUnhandledRejections) {
 	        return;
+	    }
+	    if (typeof process === "object" && typeof process.emit === "function") {
+	        Q.nextTick.runAfter(function () {
+	            if (array_indexOf(unhandledRejections, promise) !== -1) {
+	                process.emit("unhandledRejection", reason, promise);
+	                reportedUnhandledRejections.push(promise);
+	            }
+	        });
 	    }
 	
 	    unhandledRejections.push(promise);
@@ -5007,6 +5123,15 @@
 	
 	    var at = array_indexOf(unhandledRejections, promise);
 	    if (at !== -1) {
+	        if (typeof process === "object" && typeof process.emit === "function") {
+	            Q.nextTick.runAfter(function () {
+	                var atReport = array_indexOf(reportedUnhandledRejections, promise);
+	                if (atReport !== -1) {
+	                    process.emit("rejectionHandled", unhandledReasons[at], promise);
+	                    reportedUnhandledRejections.splice(atReport, 1);
+	                }
+	            });
+	        }
 	        unhandledRejections.splice(at, 1);
 	        unhandledReasons.splice(at, 1);
 	    }
@@ -5534,7 +5659,7 @@
 	
 	    var deferred = Q.defer();
 	    var pendingCount = 0;
-	    array_reduce(promises, function(prev, current, index) {
+	    array_reduce(promises, function (prev, current, index) {
 	        var promise = promises[index];
 	
 	        pendingCount++;
@@ -5563,7 +5688,7 @@
 	    return deferred.promise;
 	}
 	
-	Promise.prototype.any = function() {
+	Promise.prototype.any = function () {
 	    return any(this);
 	};
 	
@@ -5957,6 +6082,10 @@
 	    }
 	};
 	
+	Q.noConflict = function() {
+	    throw new Error("Q.noConflict only works when Q is used as a global");
+	};
+	
 	// All code before this point will be filtered from stack traces.
 	var qEndingLine = captureLine();
 	
@@ -5964,20 +6093,20 @@
 	
 	});
 	
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 12)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(/*! (webpack)/~/node-libs-browser/~/process/browser.js */ 16)))
 
 /***/ },
 /* 11 */
-/*!*******************************************************************!*\
-  !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/lib/peer.js ***!
-  \*******************************************************************/
+/*!************************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/peerjs/lib/peer.js ***!
+  \************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(/*! ./util */ 13);
-	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 18);
-	var Socket = __webpack_require__(/*! ./socket */ 14);
-	var MediaConnection = __webpack_require__(/*! ./mediaconnection */ 15);
-	var DataConnection = __webpack_require__(/*! ./dataconnection */ 16);
+	var util = __webpack_require__(/*! ./util */ 12);
+	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 17);
+	var Socket = __webpack_require__(/*! ./socket */ 13);
+	var MediaConnection = __webpack_require__(/*! ./mediaconnection */ 14);
+	var DataConnection = __webpack_require__(/*! ./dataconnection */ 15);
 	
 	/**
 	 * A peer who can initiate connections with other peers.
@@ -6474,88 +6603,16 @@
 
 /***/ },
 /* 12 */
-/*!**********************************************************!*\
-  !*** (webpack)/~/node-libs-browser/~/process/browser.js ***!
-  \**********************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	// shim for using process in browser
-	
-	var process = module.exports = {};
-	
-	process.nextTick = (function () {
-	    var canSetImmediate = typeof window !== 'undefined'
-	    && window.setImmediate;
-	    var canPost = typeof window !== 'undefined'
-	    && window.postMessage && window.addEventListener
-	    ;
-	
-	    if (canSetImmediate) {
-	        return function (f) { return window.setImmediate(f) };
-	    }
-	
-	    if (canPost) {
-	        var queue = [];
-	        window.addEventListener('message', function (ev) {
-	            var source = ev.source;
-	            if ((source === window || source === null) && ev.data === 'process-tick') {
-	                ev.stopPropagation();
-	                if (queue.length > 0) {
-	                    var fn = queue.shift();
-	                    fn();
-	                }
-	            }
-	        }, true);
-	
-	        return function nextTick(fn) {
-	            queue.push(fn);
-	            window.postMessage('process-tick', '*');
-	        };
-	    }
-	
-	    return function nextTick(fn) {
-	        setTimeout(fn, 0);
-	    };
-	})();
-	
-	process.title = 'browser';
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	
-	function noop() {}
-	
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-	
-	process.binding = function (name) {
-	    throw new Error('process.binding is not supported');
-	}
-	
-	// TODO(shtylman)
-	process.cwd = function () { return '/' };
-	process.chdir = function (dir) {
-	    throw new Error('process.chdir is not supported');
-	};
-
-
-/***/ },
-/* 13 */
-/*!*******************************************************************!*\
-  !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/lib/util.js ***!
-  \*******************************************************************/
+/*!************************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/peerjs/lib/util.js ***!
+  \************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var defaultConfig = {'iceServers': [{ 'url': 'stun:stun.l.google.com:19302' }]};
 	var dataCount = 1;
 	
 	var BinaryPack = __webpack_require__(/*! js-binarypack */ 20);
-	var RTCPeerConnection = __webpack_require__(/*! ./adapter */ 17).RTCPeerConnection;
+	var RTCPeerConnection = __webpack_require__(/*! ./adapter */ 18).RTCPeerConnection;
 	
 	var util = {
 	  noop: function() {},
@@ -6868,14 +6925,14 @@
 
 
 /***/ },
-/* 14 */
-/*!*********************************************************************!*\
-  !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/lib/socket.js ***!
-  \*********************************************************************/
+/* 13 */
+/*!**************************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/peerjs/lib/socket.js ***!
+  \**************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(/*! ./util */ 13);
-	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 18);
+	var util = __webpack_require__(/*! ./util */ 12);
+	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 17);
 	
 	/**
 	 * An abstraction on top of WebSockets and XHR streaming to provide fastest
@@ -7091,14 +7148,14 @@
 
 
 /***/ },
-/* 15 */
-/*!******************************************************************************!*\
-  !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/lib/mediaconnection.js ***!
-  \******************************************************************************/
+/* 14 */
+/*!***********************************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/peerjs/lib/mediaconnection.js ***!
+  \***********************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(/*! ./util */ 13);
-	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 18);
+	var util = __webpack_require__(/*! ./util */ 12);
+	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 17);
 	var Negotiator = __webpack_require__(/*! ./negotiator */ 19);
 	
 	/**
@@ -7195,14 +7252,14 @@
 
 
 /***/ },
-/* 16 */
-/*!*****************************************************************************!*\
-  !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/lib/dataconnection.js ***!
-  \*****************************************************************************/
+/* 15 */
+/*!**********************************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/peerjs/lib/dataconnection.js ***!
+  \**********************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(/*! ./util */ 13);
-	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 18);
+	var util = __webpack_require__(/*! ./util */ 12);
+	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 17);
 	var Negotiator = __webpack_require__(/*! ./negotiator */ 19);
 	var Reliable = __webpack_require__(/*! reliable */ 21);
 	
@@ -7471,25 +7528,82 @@
 
 
 /***/ },
-/* 17 */
-/*!**********************************************************************!*\
-  !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/lib/adapter.js ***!
-  \**********************************************************************/
+/* 16 */
+/*!**********************************************************!*\
+  !*** (webpack)/~/node-libs-browser/~/process/browser.js ***!
+  \**********************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports.RTCSessionDescription = window.RTCSessionDescription ||
-		window.mozRTCSessionDescription;
-	module.exports.RTCPeerConnection = window.RTCPeerConnection ||
-		window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-	module.exports.RTCIceCandidate = window.RTCIceCandidate ||
-		window.mozRTCIceCandidate;
+	// shim for using process in browser
+	
+	var process = module.exports = {};
+	
+	process.nextTick = (function () {
+	    var canSetImmediate = typeof window !== 'undefined'
+	    && window.setImmediate;
+	    var canPost = typeof window !== 'undefined'
+	    && window.postMessage && window.addEventListener
+	    ;
+	
+	    if (canSetImmediate) {
+	        return function (f) { return window.setImmediate(f) };
+	    }
+	
+	    if (canPost) {
+	        var queue = [];
+	        window.addEventListener('message', function (ev) {
+	            var source = ev.source;
+	            if ((source === window || source === null) && ev.data === 'process-tick') {
+	                ev.stopPropagation();
+	                if (queue.length > 0) {
+	                    var fn = queue.shift();
+	                    fn();
+	                }
+	            }
+	        }, true);
+	
+	        return function nextTick(fn) {
+	            queue.push(fn);
+	            window.postMessage('process-tick', '*');
+	        };
+	    }
+	
+	    return function nextTick(fn) {
+	        setTimeout(fn, 0);
+	    };
+	})();
+	
+	process.title = 'browser';
+	process.browser = true;
+	process.env = {};
+	process.argv = [];
+	
+	function noop() {}
+	
+	process.on = noop;
+	process.addListener = noop;
+	process.once = noop;
+	process.off = noop;
+	process.removeListener = noop;
+	process.removeAllListeners = noop;
+	process.emit = noop;
+	
+	process.binding = function (name) {
+	    throw new Error('process.binding is not supported');
+	}
+	
+	// TODO(shtylman)
+	process.cwd = function () { return '/' };
+	process.chdir = function (dir) {
+	    throw new Error('process.chdir is not supported');
+	};
 
 
 /***/ },
-/* 18 */
-/*!********************************************************************************!*\
-  !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/~/eventemitter3/index.js ***!
-  \********************************************************************************/
+/* 17 */
+/*!*************************************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/peerjs/~/eventemitter3/index.js ***!
+  \*************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -7724,16 +7838,31 @@
 
 
 /***/ },
-/* 19 */
-/*!*************************************************************************!*\
-  !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/lib/negotiator.js ***!
-  \*************************************************************************/
+/* 18 */
+/*!***************************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/peerjs/lib/adapter.js ***!
+  \***************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var util = __webpack_require__(/*! ./util */ 13);
-	var RTCPeerConnection = __webpack_require__(/*! ./adapter */ 17).RTCPeerConnection;
-	var RTCSessionDescription = __webpack_require__(/*! ./adapter */ 17).RTCSessionDescription;
-	var RTCIceCandidate = __webpack_require__(/*! ./adapter */ 17).RTCIceCandidate;
+	module.exports.RTCSessionDescription = window.RTCSessionDescription ||
+		window.mozRTCSessionDescription;
+	module.exports.RTCPeerConnection = window.RTCPeerConnection ||
+		window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+	module.exports.RTCIceCandidate = window.RTCIceCandidate ||
+		window.mozRTCIceCandidate;
+
+
+/***/ },
+/* 19 */
+/*!******************************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/peerjs/lib/negotiator.js ***!
+  \******************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var util = __webpack_require__(/*! ./util */ 12);
+	var RTCPeerConnection = __webpack_require__(/*! ./adapter */ 18).RTCPeerConnection;
+	var RTCSessionDescription = __webpack_require__(/*! ./adapter */ 18).RTCSessionDescription;
+	var RTCIceCandidate = __webpack_require__(/*! ./adapter */ 18).RTCIceCandidate;
 	
 	/**
 	 * Manages all negotiations between Peers.
@@ -8043,9 +8172,9 @@
 
 /***/ },
 /* 20 */
-/*!*****************************************************************************************!*\
-  !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/~/js-binarypack/lib/binarypack.js ***!
-  \*****************************************************************************************/
+/*!**********************************************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/peerjs/~/js-binarypack/lib/binarypack.js ***!
+  \**********************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var BufferBuilder = __webpack_require__(/*! ./bufferbuilder */ 22).BufferBuilder;
@@ -8571,9 +8700,9 @@
 
 /***/ },
 /* 21 */
-/*!**********************************************************************************!*\
-  !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/~/reliable/lib/reliable.js ***!
-  \**********************************************************************************/
+/*!***************************************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/peerjs/~/reliable/lib/reliable.js ***!
+  \***************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var util = __webpack_require__(/*! ./util */ 23);
@@ -8898,9 +9027,9 @@
 
 /***/ },
 /* 22 */
-/*!********************************************************************************************!*\
-  !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/~/js-binarypack/lib/bufferbuilder.js ***!
-  \********************************************************************************************/
+/*!*************************************************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/peerjs/~/js-binarypack/lib/bufferbuilder.js ***!
+  \*************************************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var binaryFeatures = {};
@@ -8971,9 +9100,9 @@
 
 /***/ },
 /* 23 */
-/*!******************************************************************************!*\
-  !*** /Users/tim/code/bionet/webrtc-kademlia/~/peerjs/~/reliable/lib/util.js ***!
-  \******************************************************************************/
+/*!***********************************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/peerjs/~/reliable/lib/util.js ***!
+  \***********************************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	var BinaryPack = __webpack_require__(/*! js-binarypack */ 20);
@@ -9071,6 +9200,328 @@
 	};
 	
 	module.exports = util;
+
+
+/***/ },
+/* 24 */
+/*!**********************!*\
+  !*** ./Transport.js ***!
+  \**********************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var Peer = __webpack_require__(/*! peerjs */ 11);
+	var constants = __webpack_require__(/*! ./constants */ 5);
+	var EventEmitter = __webpack_require__(/*! eventemitter3 */ 25);
+	
+	var _CONNECTIONS = {};
+	
+	function Transport (myId) {
+	
+		this.myId = myId;
+	
+	  this.peer = new Peer(myId, {
+	    host: constants.HOST,
+	    port: constants.HOST_PORT,
+	    path: '/'
+	  });
+	
+	  EventEmitter.call(this);
+	
+	  /** Pass Through the important events */
+	
+	};
+	
+	
+	Transport.prototype.getConnection = function(id, cb, scope) {
+		if (_CONNECTIONS(id)) {
+			cb.call(scope, _CONNECTIONS(id));
+		} else {
+			var connection = new Connection(id);
+	
+		}
+	};
+	
+	
+	
+	function Connection (id) {
+		this.id = id;
+	};
+	
+	Connection.prototype.send = function(data) {
+	
+	};
+	
+	module.exports = Transport;
+
+/***/ },
+/* 25 */
+/*!****************************************************************!*\
+  !*** /Users/tim/code/webrtc-kademlia/~/eventemitter3/index.js ***!
+  \****************************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	//
+	// We store our EE objects in a plain object whose properties are event names.
+	// If `Object.create(null)` is not supported we prefix the event names with a
+	// `~` to make sure that the built-in object properties are not overridden or
+	// used as an attack vector.
+	// We also assume that `Object.create(null)` is available when the event name
+	// is an ES6 Symbol.
+	//
+	var prefix = typeof Object.create !== 'function' ? '~' : false;
+	
+	/**
+	 * Representation of a single EventEmitter function.
+	 *
+	 * @param {Function} fn Event handler to be called.
+	 * @param {Mixed} context Context for function execution.
+	 * @param {Boolean} once Only emit once
+	 * @api private
+	 */
+	function EE(fn, context, once) {
+	  this.fn = fn;
+	  this.context = context;
+	  this.once = once || false;
+	}
+	
+	/**
+	 * Minimal EventEmitter interface that is molded against the Node.js
+	 * EventEmitter interface.
+	 *
+	 * @constructor
+	 * @api public
+	 */
+	function EventEmitter() { /* Nothing to set */ }
+	
+	/**
+	 * Holds the assigned EventEmitters by name.
+	 *
+	 * @type {Object}
+	 * @private
+	 */
+	EventEmitter.prototype._events = undefined;
+	
+	/**
+	 * Return a list of assigned event listeners.
+	 *
+	 * @param {String} event The events that should be listed.
+	 * @param {Boolean} exists We only need to know if there are listeners.
+	 * @returns {Array|Boolean}
+	 * @api public
+	 */
+	EventEmitter.prototype.listeners = function listeners(event, exists) {
+	  var evt = prefix ? prefix + event : event
+	    , available = this._events && this._events[evt];
+	
+	  if (exists) return !!available;
+	  if (!available) return [];
+	  if (available.fn) return [available.fn];
+	
+	  for (var i = 0, l = available.length, ee = new Array(l); i < l; i++) {
+	    ee[i] = available[i].fn;
+	  }
+	
+	  return ee;
+	};
+	
+	/**
+	 * Emit an event to all registered event listeners.
+	 *
+	 * @param {String} event The name of the event.
+	 * @returns {Boolean} Indication if we've emitted an event.
+	 * @api public
+	 */
+	EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
+	  var evt = prefix ? prefix + event : event;
+	
+	  if (!this._events || !this._events[evt]) return false;
+	
+	  var listeners = this._events[evt]
+	    , len = arguments.length
+	    , args
+	    , i;
+	
+	  if ('function' === typeof listeners.fn) {
+	    if (listeners.once) this.removeListener(event, listeners.fn, undefined, true);
+	
+	    switch (len) {
+	      case 1: return listeners.fn.call(listeners.context), true;
+	      case 2: return listeners.fn.call(listeners.context, a1), true;
+	      case 3: return listeners.fn.call(listeners.context, a1, a2), true;
+	      case 4: return listeners.fn.call(listeners.context, a1, a2, a3), true;
+	      case 5: return listeners.fn.call(listeners.context, a1, a2, a3, a4), true;
+	      case 6: return listeners.fn.call(listeners.context, a1, a2, a3, a4, a5), true;
+	    }
+	
+	    for (i = 1, args = new Array(len -1); i < len; i++) {
+	      args[i - 1] = arguments[i];
+	    }
+	
+	    listeners.fn.apply(listeners.context, args);
+	  } else {
+	    var length = listeners.length
+	      , j;
+	
+	    for (i = 0; i < length; i++) {
+	      if (listeners[i].once) this.removeListener(event, listeners[i].fn, undefined, true);
+	
+	      switch (len) {
+	        case 1: listeners[i].fn.call(listeners[i].context); break;
+	        case 2: listeners[i].fn.call(listeners[i].context, a1); break;
+	        case 3: listeners[i].fn.call(listeners[i].context, a1, a2); break;
+	        default:
+	          if (!args) for (j = 1, args = new Array(len -1); j < len; j++) {
+	            args[j - 1] = arguments[j];
+	          }
+	
+	          listeners[i].fn.apply(listeners[i].context, args);
+	      }
+	    }
+	  }
+	
+	  return true;
+	};
+	
+	/**
+	 * Register a new EventListener for the given event.
+	 *
+	 * @param {String} event Name of the event.
+	 * @param {Functon} fn Callback function.
+	 * @param {Mixed} context The context of the function.
+	 * @api public
+	 */
+	EventEmitter.prototype.on = function on(event, fn, context) {
+	  var listener = new EE(fn, context || this)
+	    , evt = prefix ? prefix + event : event;
+	
+	  if (!this._events) this._events = prefix ? {} : Object.create(null);
+	  if (!this._events[evt]) this._events[evt] = listener;
+	  else {
+	    if (!this._events[evt].fn) this._events[evt].push(listener);
+	    else this._events[evt] = [
+	      this._events[evt], listener
+	    ];
+	  }
+	
+	  return this;
+	};
+	
+	/**
+	 * Add an EventListener that's only called once.
+	 *
+	 * @param {String} event Name of the event.
+	 * @param {Function} fn Callback function.
+	 * @param {Mixed} context The context of the function.
+	 * @api public
+	 */
+	EventEmitter.prototype.once = function once(event, fn, context) {
+	  var listener = new EE(fn, context || this, true)
+	    , evt = prefix ? prefix + event : event;
+	
+	  if (!this._events) this._events = prefix ? {} : Object.create(null);
+	  if (!this._events[evt]) this._events[evt] = listener;
+	  else {
+	    if (!this._events[evt].fn) this._events[evt].push(listener);
+	    else this._events[evt] = [
+	      this._events[evt], listener
+	    ];
+	  }
+	
+	  return this;
+	};
+	
+	/**
+	 * Remove event listeners.
+	 *
+	 * @param {String} event The event we want to remove.
+	 * @param {Function} fn The listener that we need to find.
+	 * @param {Mixed} context Only remove listeners matching this context.
+	 * @param {Boolean} once Only remove once listeners.
+	 * @api public
+	 */
+	EventEmitter.prototype.removeListener = function removeListener(event, fn, context, once) {
+	  var evt = prefix ? prefix + event : event;
+	
+	  if (!this._events || !this._events[evt]) return this;
+	
+	  var listeners = this._events[evt]
+	    , events = [];
+	
+	  if (fn) {
+	    if (listeners.fn) {
+	      if (
+	           listeners.fn !== fn
+	        || (once && !listeners.once)
+	        || (context && listeners.context !== context)
+	      ) {
+	        events.push(listeners);
+	      }
+	    } else {
+	      for (var i = 0, length = listeners.length; i < length; i++) {
+	        if (
+	             listeners[i].fn !== fn
+	          || (once && !listeners[i].once)
+	          || (context && listeners[i].context !== context)
+	        ) {
+	          events.push(listeners[i]);
+	        }
+	      }
+	    }
+	  }
+	
+	  //
+	  // Reset the array, or remove it completely if we have no more listeners.
+	  //
+	  if (events.length) {
+	    this._events[evt] = events.length === 1 ? events[0] : events;
+	  } else {
+	    delete this._events[evt];
+	  }
+	
+	  return this;
+	};
+	
+	/**
+	 * Remove all listeners or only the listeners for the specified event.
+	 *
+	 * @param {String} event The event want to remove all listeners for.
+	 * @api public
+	 */
+	EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
+	  if (!this._events) return this;
+	
+	  if (event) delete this._events[prefix ? prefix + event : event];
+	  else this._events = prefix ? {} : Object.create(null);
+	
+	  return this;
+	};
+	
+	//
+	// Alias methods names because people roll like that.
+	//
+	EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+	EventEmitter.prototype.addListener = EventEmitter.prototype.on;
+	
+	//
+	// This function doesn't apply anymore.
+	//
+	EventEmitter.prototype.setMaxListeners = function setMaxListeners() {
+	  return this;
+	};
+	
+	//
+	// Expose the prefix.
+	//
+	EventEmitter.prefixed = prefix;
+	
+	//
+	// Expose the module.
+	//
+	if (true) {
+	  module.exports = EventEmitter;
+	}
 
 
 /***/ }

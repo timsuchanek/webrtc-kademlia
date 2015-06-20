@@ -95,8 +95,16 @@ function _handleNewNode(node) {
 
 
 RoutingTable.prototype.insertNode = function(id, online) {
-  // find the right bucket
 
+  // is the ID our own ID?
+
+  if (id === this.myId) {
+    console.log('SAW OWN ID');
+    return;
+  }
+
+
+  // find the right bucket
   var bucket = _findBucket.call(this, id);
 
 

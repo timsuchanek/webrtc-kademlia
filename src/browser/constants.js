@@ -6,7 +6,7 @@ module.exports = {
   FIND_VALUE_TIMEOUT: 1000,
   HOST: 'localhost',
   HOST_PORT: 9000,
-  
+
   // Kademlia Config
   HASH_SPACE: 160,
   K: 8,
