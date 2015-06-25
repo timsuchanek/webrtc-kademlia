@@ -98,7 +98,7 @@ module.exports.addGetFunctionality = function(dht) {
       }, function error(err) {
         module.exports.log('Fail with GET command', err);
         _addGetAnswer(err);
-      })
+      });
     }
   });
 }

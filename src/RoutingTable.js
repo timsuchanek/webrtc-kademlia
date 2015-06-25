@@ -1,22 +1,7 @@
 var KBucket = require('./KBucket');
-var xor = require('./xor');
 var constants = require('./constants');
 var util = require('./util');
 
-function RoutingTable(kademlia, k, myId) {
-
-  // Initialize with the first bucket on stage -1
-  // this bucket starts to split when it's full
-
-  this.k = k;
-  this.myId = myId;
-  this.kademlia = kademlia;
-
-  this.buckets = {
-    '-1':  new KBucket(k, '', this.kademlia, this)
-  };
-
-}
 
 function _findBucket(id) {
 
@@ -32,7 +17,7 @@ function _findBucket(id) {
     // sort descending and take the first element
     var bestFittingBucket =
       Object.keys(this.buckets).sort(function(a, b) {
-        return xor.commonPrefix(id, b) - xor.commonPrefix(id, a);
+        return util.commonPrefix(id, b) - util.commonPrefix(id, a);
       })[0];
 
     return this.buckets[bestFittingBucket];
@@ -42,17 +27,24 @@ function _findBucket(id) {
 
 
 function _splitBucket(bucket) {
-  if (Object.keys(this.buckets).length < constants.HASH_SPACE) {
-    var nodes = bucket.getNodes();
-    var prefix = bucket.getPrefix();
-    delete this.buckets[prefix.length > 0 ? prefix : '-1'];
-    this.buckets[prefix + '0'] = new KBucket(this.k, prefix + '0', this.kademlia, this);
-    this.buckets[prefix + '1'] = new KBucket(this.k, prefix + '1', this.kademlia, this);
-    this.insertNodes(nodes);
-    return true;
-  } else {
-    return false;
+
+  var prefix = util.commonPrefix(this.myID, bucket.prefix);
+
+  // TODO: detect special case in blue ...
+  if (prefix.length === bucket.prefix.length) {
+    if (Object.keys(this.buckets).length < constants.HASH_SPACE) {
+      var nodes = bucket.getNodes();
+      var prefix = bucket.getPrefix();
+      delete this.buckets[prefix.length > 0 ? prefix : '-1'];
+      this.buckets[prefix + '0'] = new KBucket(this.k, prefix + '0', this.kademlia, this);
+      this.buckets[prefix + '1'] = new KBucket(this.k, prefix + '1', this.kademlia, this);
+      this.insertNodes(nodes);
+      return true;
+    }
   }
+
+  return false;
+
 }
 
 /**
@@ -68,38 +60,79 @@ function _splitBucket(bucket) {
  */
 
 function _handleNewNode(node) {
-  var storage = this.kademlia.storage;
+  var storage = this.storage;
 
-  var nodesResponsibility = Object.keys(storage._data).filter(function(key) {
+  var nearKeys = storage.getSimiliarKeys(node, function(keys) {
+    keys = Array.isArray(keys) ? keys : [];
 
-    var nodesDistance = xor.distance(node, key);
-    // look, if there ARENT exactly K better nodes (better means nearer at the key)
-    var betterNodes = this.getKNearest(constants.K, key).filter(function(id) {
-      return xor.lowerThan(xor.distance(id, key), nodesDistance);
-    });
+    keys.filter(function(key) {
 
-    // if there aren't k better nodes, `node` has the responsibility to save the content
-    if (betterNodes.length < constants.K) {
-
-      this.kademlia.STORE(node, key, storage._data[key])
-      .then(function success() {
-        // nice
-        console.log('jo');
-      }, function failure() {
-        console.log('no');
+      var nodesDistance = util.distance(node, key);
+      // look, if there ARENT exactly K better nodes (better means nearer at the key)
+      var betterNodes = this.getKNearest(constants.K, key).filter(function(id) {
+        return util.lowerThan(util.distance(id, key), nodesDistance);
       });
 
-    }
+      // if there aren't k better nodes, `node` has the responsibility to save the content
+      if (betterNodes.length < constants.K) {
+
+        storage.get(key)
+        .then(function(value) {
+          value = value || null;
+          if (value !== null) {
+
+            this.kademlia.STORE(node, key, value)
+            .then(function success() {
+              // nice
+              // log
+              // console.log('Could save ' + key + ' to ' + node);
+            }, function failure() {
+              // log
+              // console.log('COULDNT save ' + key + ' to ' + node);
+            });
+
+          }
+        });
+
+      }
+    }, this);
+
   }, this);
+
 }
 
+
+
+function RoutingTable(myID, storage) {
+
+  // Initialize with the first bucket on stage -1
+  // this bucket starts to split when it's full
+
+  this.k        = constants.K;
+  this.myID     = myID;
+  this.storage  = storage;
+  this.kademlia = null;
+  this.buckets  = {};
+
+}
+
+RoutingTable.prototype.setKademlia = function(kademlia) {
+  this.kademlia = kademlia;
+
+  if (Object.keys(this.buckets).length === 0) {
+    this.buckets = {
+      '-1':  new KBucket(this.k, '', this.kademlia, this)
+    };
+  }
+
+}
 
 RoutingTable.prototype.insertNode = function(id, online) {
 
   // is the ID our own ID?
 
-  if (id === this.myId) {
-    console.log('SAW OWN ID');
+  if (id === this.myID) {
+    // console.log('SAW OWN ID');
     return;
   }
 
@@ -118,7 +151,7 @@ RoutingTable.prototype.insertNode = function(id, online) {
   } else if (bucketLength === this.k) {
 
 
-    var ownBucket = _findBucket.call(this, this.myId);
+    var ownBucket = _findBucket.call(this, this.myID);
 
     /**
       if the node itself is in the range of the bucket, that is full,
@@ -174,7 +207,7 @@ RoutingTable.prototype.insertNode = function(id, online) {
 
       bucket.update(id, online, _handleNewNode.bind(this));
 
-      util.drawRoutingTable(this);
+      // util.drawRoutingTable(this);
     } else {
       // try inserting anyways (if a node from the bucket falls out)
       bucket.update(id, online, _handleNewNode.bind(this));
@@ -197,7 +230,7 @@ RoutingTable.prototype.getKNearest = function(k, id) {
 
   var bestFittingBuckets =
     Object.keys(this.buckets).sort(function(a, b) {
-      return xor.commonPrefix(id, b) - xor.commonPrefix(id, a);
+      return util.commonPrefix(id, b) - util.commonPrefix(id, a);
     })
     .map(function(key) {
       return this.buckets[key];

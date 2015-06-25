@@ -1,3 +1,6 @@
+var constants = require('./constants');
+
+
 String.prototype.map = function() {
   return Array.prototype.map.apply(this, arguments).join('');
 }
@@ -38,10 +41,10 @@ String.prototype.commonPrefix = function(b) {
   for (var t = 0, tl = this.length; t < tl; t++) {
     if (this[t] !== b[t]) {
       return lastMatch + 1;
-    } else {
-      lastMatch = t;
     }
+    lastMatch = t;
   }
+  return lastMatch;
 }
 
 var ALPHABET = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","0","1","2","3","4","5","6","7","8","9","-","_"];
@@ -98,11 +101,23 @@ function b64ToBinary(n) {
     throw new TypeError('the input argument `n` is not a string.');
   }
 
-  return n.map(function(digit) {
+  var result = n.map(function(digit) {
     return prefixWithZeroes(ALPHABET.indexOf(digit).toString(2));
   });
+
+  // IMPORTANT!!!
+  // If the ID Space is eg. 8, then 4 leading zeroes are generated!
+  // If its 160, 2 leading zeroes are generated.
+
+  var padding = 6 - (constants.HASH_SPACE % 6);
+
+  return result.substring(padding, result.length);
 }
 
+function getMostSignificantBits(id, n) {
+  var binary = b64ToBinary(id);
+  return binary.slice(0, n);
+}
 
 function getRandomBinarySequence(n) {
   var bits = '';
@@ -118,6 +133,7 @@ function getRandomBinarySequence(n) {
 }
 
 var distance = function(a, b) {
+
   var aBin = b64ToBinary(a)
     , bBin = b64ToBinary(b);
 
@@ -132,8 +148,8 @@ var distance = function(a, b) {
  * @return {Array}
  */
 var sortByDistance = function(array, id, desc) {
-  var sorting = !!desc;
-  if (sorting) {
+  desc = !!desc;
+  if (desc) {
     return array.sort(function(a, b) {
       return distance(b, id) - distance(a, id);
     });
@@ -149,8 +165,8 @@ var commonPrefix = function(idB64, binaryPrefix) {
   return idBin.commonPrefix(binaryPrefix);
 }
 
-var getRandomID = function(bits) {
-  return binaryToB64(getRandomBinarySequence(bits))
+var getRandomID = function() {
+  return binaryToB64(getRandomBinarySequence(constants.HASH_SPACE));
 }
 
 /**
@@ -164,6 +180,29 @@ var greaterThan = function(a, b) {
 
 var lowerThan = function(a, b) {
   return a.lowerThan(b);
+}
+
+var mergeKNearest = function(key, a, b) {
+
+  var k = constants.K;
+  // we need a clone, because we use .shift() and don't want to touch the original arrays
+  a = sortByDistance(a, key).slice();
+  b = sortByDistance(b, key).slice();
+  var nearest = [];
+
+  for (var i = 0; i < k; i++) {
+    if (a.length === 0 && b.length === 0) return nearest;
+    var dist1 = distance(key, a[0]);
+    var dist2 = distance(key, b[0]);
+
+    if (dist1 < dist2) {
+      nearest.push(a.shift());
+    } else {
+      nearest.push(b.shift());
+    }
+  }
+
+  return nearest;
 }
 
 
@@ -187,3 +226,5 @@ module.exports.b64ToBinary = b64ToBinary;
 module.exports.sortByDistance = sortByDistance;
 
 module.exports.getRandomID = getRandomID;
+module.exports.getMostSignificantBits = getMostSignificantBits;
+module.exports.mergeKNearest = mergeKNearest;

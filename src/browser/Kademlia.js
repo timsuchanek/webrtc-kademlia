@@ -670,74 +670,7 @@ Kademlia.prototype.node_lookup = function(id, valueLookup, getCall) {
 
 };
 
-/**
- * Join the DHT Network.
- * @return {Promise}
- */
-Kademlia.prototype.join = function() {
 
-  //generate random ID
-  this.myRandomId = xor.getRandomID(constants.HASH_SPACE);
-  var that = this;
-
-  this.transport = new Transport(this.myRandomId);
-
-
-  return new Q.Promise(function(resolve, reject) {
-
-    that.peer.on('error', function(err) {
-      // The PeerJS Event System is not working properly. So ignore it.
-      // One failed connection doesn't mean, that Kademlia.prototype.join() fails.
-
-      if (constants.LOG_PEERJS) {
-        util.log('Peer.JS Error', err);
-      }
-    });
-
-    that.peer.on('open', function(id) {
-
-      // util.log('Jo, I\'m in. My ID:', id);
-
-      // It only makes sense to get the bootstrap peers, if the webrtc signaling worked
-      _getBootstrapPeers.call(that, function(peers) {
-        bootstrapPeers = peers;
-
-        // remove own ID from the list of peers
-        var index = peers.indexOf(that.myRandomId);
-        if (index !== -1) {
-          peers.splice(index, 1);
-        }
-
-        /**
-          Initialize Routing Table
-        **/
-
-        routingTable = window.routingTable = that.routingTable = new RoutingTable(that, constants.K, that.myRandomId);
-
-        routingTable.insertNodes(peers);
-
-
-        /**
-         * Perform a node lookup for the node's ID
-         */
-        that.node_lookup(that.myRandomId)
-        .then(function success(results) {
-          // For an easy to use API, bind the cb to the DHT scope
-          resolve(results);
-        }, function error(err) {
-          reject(err);
-        });
-
-      });
-    });
-
-    that.peer.on('connection', function(conn) {
-      // util.log('Someone connected to me', conn);
-      addRPCResponses.call(that, conn);
-    });
-
-  });
-}
 
 /**
  * Returns the value from the local storage.

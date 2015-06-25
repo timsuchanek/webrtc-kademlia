@@ -18,6 +18,7 @@
   "dependencies": {
     "eventemitter3": "^1.1.1",
     "finalhandler": "^0.3.4",
+    "level": "^1.2.0",
     "peerjs": "^0.3.14",
     "q": "^1.2.0",
     "serve-static": "^1.9.2"

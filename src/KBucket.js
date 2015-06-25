@@ -1,4 +1,3 @@
-var xor = require('./xor');
 var util = require('./util');
 
 
@@ -19,8 +18,8 @@ KBucket.prototype.update = function(id, online, cb) {
     } else {
       if (this._list.length < this.k) {
         this._list.push(id);
-        util.log('Added Node', id, '(' + xor.b64ToBinary(id).substr(0, 16) + ') to KBucket', this.prefix);
-        util.drawRoutingTable(this.routingTable);
+        // util.log('Added Node', id, '(' + xor.b64ToBinary(id).substr(0, 16) + ') to KBucket', this.prefix);
+        // util.drawRoutingTable(this.routingTable);
       } else {
         // check if the OLDEST id is still online
         var that = this;
@@ -28,8 +27,8 @@ KBucket.prototype.update = function(id, online, cb) {
           if (res && res.error) {
             that._list.shift();
             that._list.push(id);
-            util.log('Added Node', id, '(' + xor.b64ToBinary(id).substr(0, 16) + ') to KBucket', this.prefix);
-            util.drawRoutingTable(that.routingTable);
+            // util.log('Added Node', id, '(' + xor.b64ToBinary(id).substr(0, 16) + ') to KBucket', this.prefix);
+            // util.drawRoutingTable(that.routingTable);
           } else {
             // today we don't have a price for you :/
           }
@@ -44,8 +43,8 @@ KBucket.prototype.update = function(id, online, cb) {
     if (index !== -1) {
       this._list.splice(index, 1);
     }
-    util.log('Removed Node', id, '(' + xor.b64ToBinary(id).substr(0, 16) + ') from KBucket', this.prefix);
-    util.drawRoutingTable(this.routingTable);
+    // util.log('Removed Node', id, '(' + xor.b64ToBinary(id).substr(0, 16) + ') from KBucket', this.prefix);
+    // util.drawRoutingTable(this.routingTable);
   }
 
 }
@@ -56,7 +55,7 @@ KBucket.prototype.getLength = function() {
 
 // return ids sorted by distance to input id
 KBucket.prototype.getClosest = function(id) {
-  return xor.sortByDistance(this._list, id);
+  return util.sortByDistance(this._list, id);
 }
 
 /**
@@ -64,7 +63,8 @@ KBucket.prototype.getClosest = function(id) {
 **/
 KBucket.prototype.refresh = function() {
   var randomId = _getRandomID.call(this);
-  this.kademlia.node_lookup(randomId, function(results) {
+  this.kademlia.node_lookup(randomId)
+  .then(function(results) {
     // gratz
   });
 }
