@@ -108,9 +108,11 @@ function Storage(id) {
 
 
   if (node) {
+
   	try {
   		require('fs').mkdirSync('./db');
   	} catch (e) {}
+
   	this.db = levelup('./db/' + this.id);
   } else {
   	this.db = gazel.createClient(this.id);
